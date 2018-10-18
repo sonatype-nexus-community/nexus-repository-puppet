@@ -16,8 +16,11 @@ import javax.inject.Named;
 import javax.inject.Singleton;
 
 import org.sonatype.nexus.repository.view.Context;
+import org.sonatype.nexus.repository.view.Parameters;
 import org.sonatype.nexus.repository.view.matchers.token.TokenMatcher;
 import org.sonatype.nexus.repository.view.matchers.token.TokenMatcher.State;
+
+import com.google.common.base.Joiner;
 
 import static com.google.common.base.Preconditions.checkNotNull;
 
@@ -53,5 +56,13 @@ public class PuppetPathUtils
 
   public String buildModuleReleaseByNameAndVersionPath(final State matcherState) {
     return String.format("/v3/releases/%s-%s-%s", user(matcherState), module(matcherState), version(matcherState));
+  }
+
+  public String buildModuleReleaseByNamePath(final Parameters parameters) {
+    return String.format("/v3/releases?%s", Joiner.on("&").withKeyValueSeparator("=").join(parameters));
+  }
+
+  public String buildModuleDownloadPath(final State matcherState) {
+    return String.format("/v3/files/%s-%s-%s.tar.gz", user(matcherState), module(matcherState), version(matcherState));
   }
 }

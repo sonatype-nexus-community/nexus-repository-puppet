@@ -24,10 +24,13 @@ import org.sonatype.nexus.repository.config.Configuration;
 import org.sonatype.nexus.repository.proxy.ProxyFacet;
 import org.sonatype.nexus.repository.proxy.ProxyFacetSupport;
 import org.sonatype.nexus.repository.puppet.internal.AssetKind;
+import org.sonatype.nexus.repository.puppet.internal.metadata.PuppetAttributes;
+import org.sonatype.nexus.repository.puppet.internal.util.PuppetAttributeParser;
 import org.sonatype.nexus.repository.puppet.internal.util.PuppetDataAccess;
 import org.sonatype.nexus.repository.puppet.internal.util.PuppetPathUtils;
 import org.sonatype.nexus.repository.storage.Asset;
 import org.sonatype.nexus.repository.storage.Bucket;
+import org.sonatype.nexus.repository.storage.Component;
 import org.sonatype.nexus.repository.storage.StorageFacet;
 import org.sonatype.nexus.repository.storage.StorageTx;
 import org.sonatype.nexus.repository.storage.TempBlob;
@@ -59,11 +62,15 @@ public class PuppetProxyFacetImpl
 
   private PuppetDataAccess puppetDataAccess;
 
+  private PuppetAttributeParser puppetAttributeParser;
+
   @Inject
   public PuppetProxyFacetImpl(final PuppetPathUtils puppetPathUtils,
-                              final PuppetDataAccess puppetDataAccess) {
+                              final PuppetDataAccess puppetDataAccess,
+                              final PuppetAttributeParser puppetAttributeParser) {
     this.puppetPathUtils = checkNotNull(puppetPathUtils);
     this.puppetDataAccess = checkNotNull(puppetDataAccess);
+    this.puppetAttributeParser = checkNotNull(puppetAttributeParser);
   }
 
   // HACK: Workaround for known CGLIB issue, forces an Import-Package for org.sonatype.nexus.repository.config
@@ -79,11 +86,12 @@ public class PuppetProxyFacetImpl
     TokenMatcher.State matcherState = puppetPathUtils.matcherState(context);
     switch (assetKind) {
       case MODULE_RELEASES_BY_NAME:
-        return null;
+        Parameters parameters = context.getRequest().getParameters();
+        return getAsset(puppetPathUtils.buildModuleReleaseByNamePath(parameters));
       case MODULE_RELEASE_BY_NAME_AND_VERSION:
         return getAsset(puppetPathUtils.buildModuleReleaseByNameAndVersionPath(matcherState));
       case MODULE_DOWNLOAD:
-        return null;
+        return getAsset(puppetPathUtils.buildModuleDownloadPath(matcherState));
       default:
         throw new IllegalStateException("Received an invalid AssetKind of type: " + assetKind.name());
     }
@@ -109,16 +117,64 @@ public class PuppetProxyFacetImpl
     TokenMatcher.State matcherState = puppetPathUtils.matcherState(context);
     switch (assetKind) {
       case MODULE_RELEASES_BY_NAME:
-        return null;
+        return putMetadata(content,
+            assetKind,
+            puppetPathUtils.buildModuleReleaseByNamePath(context.getRequest().getParameters()));
       case MODULE_RELEASE_BY_NAME_AND_VERSION:
         return putMetadata(content,
             assetKind,
             puppetPathUtils.buildModuleReleaseByNameAndVersionPath(matcherState));
       case MODULE_DOWNLOAD:
-        return null;
+        return putModule(content,
+            assetKind,
+            puppetPathUtils.buildModuleDownloadPath(matcherState));
       default:
         throw new IllegalStateException("Received an invalid AssetKind of type: " + assetKind.name());
     }
+  }
+
+  private Content putModule(final Content content,
+                            final AssetKind assetKind,
+                            final String assetPath) throws IOException
+  {
+    StorageFacet storageFacet = facet(StorageFacet.class);
+
+    try (TempBlob tempBlob = storageFacet.createTempBlob(content.openInputStream(), PuppetDataAccess.HASH_ALGORITHMS)) {
+      PuppetAttributes puppetAttributes = puppetAttributeParser.getAttributesFromInputStream(tempBlob.get());
+      return doPutCookbook(puppetAttributes, tempBlob, content, assetKind, assetPath);
+    }
+  }
+
+  @TransactionalStoreBlob
+  protected Content doPutCookbook(final PuppetAttributes puppetAttributes,
+                                  final TempBlob tempBlob,
+                                  final Content content,
+                                  final AssetKind assetKind,
+                                  final String assetPath) throws IOException
+  {
+    StorageTx tx = UnitOfWork.currentTx();
+    Bucket bucket = tx.findBucket(getRepository());
+
+    Component component = puppetDataAccess.findComponent(tx,
+        getRepository(),
+        puppetAttributes.getName(),
+        puppetAttributes.getVersion());
+
+    if (component == null) {
+      component = tx.createComponent(bucket, getRepository().getFormat())
+          .name(puppetAttributes.getName())
+          .version(puppetAttributes.getVersion());
+    }
+    tx.saveComponent(component);
+
+    Asset asset = puppetDataAccess.findAsset(tx, bucket, assetPath);
+    if (asset == null) {
+      asset = tx.createAsset(bucket, component);
+      asset.name(assetPath);
+      asset.formatAttributes().set(P_ASSET_KIND, assetKind.name());
+    }
+
+    return puppetDataAccess.saveAsset(tx, asset, tempBlob, content);
   }
 
   private Content putMetadata(final Content content,
