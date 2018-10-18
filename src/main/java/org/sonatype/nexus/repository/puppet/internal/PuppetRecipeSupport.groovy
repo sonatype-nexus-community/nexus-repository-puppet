@@ -32,12 +32,21 @@ import org.sonatype.nexus.repository.storage.DefaultComponentMaintenanceImpl
 import org.sonatype.nexus.repository.storage.StorageFacet
 import org.sonatype.nexus.repository.storage.UnitOfWorkHandler
 import org.sonatype.nexus.repository.view.ConfigurableViewFacet
+import org.sonatype.nexus.repository.view.Context
+import org.sonatype.nexus.repository.view.Matcher
 import org.sonatype.nexus.repository.view.handlers.BrowseUnsupportedHandler
 import org.sonatype.nexus.repository.view.handlers.ConditionalRequestHandler
 import org.sonatype.nexus.repository.view.handlers.ContentHeadersHandler
 import org.sonatype.nexus.repository.view.handlers.ExceptionHandler
 import org.sonatype.nexus.repository.view.handlers.HandlerContributor
 import org.sonatype.nexus.repository.view.handlers.TimingHandler
+import org.sonatype.nexus.repository.view.matchers.ActionMatcher
+import org.sonatype.nexus.repository.view.matchers.LiteralMatcher
+import org.sonatype.nexus.repository.view.matchers.logic.LogicMatchers
+import org.sonatype.nexus.repository.view.matchers.token.TokenMatcher
+
+import static org.sonatype.nexus.repository.http.HttpMethods.GET
+import static org.sonatype.nexus.repository.http.HttpMethods.HEAD
 
 /**
  * Support for Puppet recipes.
@@ -96,13 +105,58 @@ abstract class PuppetRecipeSupport
   @Inject
   Provider<PurgeUnusedFacet> purgeUnusedFacet
 
-  @Inject
-  Provider<NegativeCacheFacet> negativeCacheFacet
-
-  @Inject
-  NegativeCacheHandler negativeCacheHandler
-
   protected PuppetRecipeSupport(final Type type, final Format format) {
     super(type, format)
+  }
+
+  /**
+   * Matcher for module releases.
+   */
+  static Matcher moduleReleasesSearchByNameMatcher() {
+    LogicMatchers.and(
+        new ActionMatcher(GET, HEAD),
+        new TokenMatcher('/v3/releases'),
+        new Matcher() {
+          @Override
+          boolean matches(final Context context) {
+            context.attributes.set(AssetKind.class, AssetKind.MODULE_RELEASES_BY_NAME)
+            return true
+          }
+        }
+    )
+  }
+
+  /**
+   * Matcher for a module release details.
+   */
+  static Matcher moduleReleaseByNameAndVersionMatcher() {
+    LogicMatchers.and(
+        new ActionMatcher(GET, HEAD),
+        new TokenMatcher('/v3/releases/{user:.+}-{module:.+}-{version:.+}'),
+        new Matcher() {
+          @Override
+          boolean matches(final Context context) {
+            context.attributes.set(AssetKind.class, AssetKind.MODULE_RELEASE_BY_NAME_AND_VERSION)
+            return true
+          }
+        }
+    )
+  }
+
+  /**
+   * Matcher for a downloading a module file.
+   */
+  static Matcher moduleDownloadMatcher() {
+    LogicMatchers.and(
+        new ActionMatcher(GET, HEAD),
+        new TokenMatcher('/v3/files/{user:.+}-{module:.+}-{version:.+}.tar.gz'),
+        new Matcher() {
+          @Override
+          boolean matches(final Context context) {
+            context.attributes.set(AssetKind.class, AssetKind.MODULE_DOWNLOAD)
+            return true
+          }
+        }
+    )
   }
 }
