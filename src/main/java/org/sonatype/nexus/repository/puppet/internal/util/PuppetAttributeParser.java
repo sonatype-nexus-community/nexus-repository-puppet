@@ -29,7 +29,7 @@ import static com.google.common.base.Preconditions.checkNotNull;
 @Singleton
 public class PuppetAttributeParser
 {
-  private TgzParser tgzParser;
+  private final TgzParser tgzParser;
 
   private ObjectMapper objectMapper;
 
