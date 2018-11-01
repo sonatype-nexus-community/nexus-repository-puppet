@@ -53,7 +53,7 @@ public class PuppetContentValidatorTest
   }
 
   @Test
-  public void testContentValidatorJson() throws Exception {
+  public void returnJsonTypeWhenValidatingJson() throws Exception {
     setUpMock(TEST_JSON_CONTENT_NAME + ".json", APPLICATION_JSON, false);
 
     String result = underTest.determineContentType(
@@ -64,7 +64,7 @@ public class PuppetContentValidatorTest
   }
 
   @Test
-  public void testContentValidatorTarGz() throws Exception {
+  public void returnGzipTypeWhenValidatingTarGz() throws Exception {
     setUpMock(TEST_TAR_GZ_CONTENT_NAME, APPLICATION_GZIP, true);
 
     String result = underTest.determineContentType(
