@@ -67,7 +67,8 @@ public class PuppetProxyFacetImpl
   @Inject
   public PuppetProxyFacetImpl(final PuppetPathUtils puppetPathUtils,
                               final PuppetDataAccess puppetDataAccess,
-                              final PuppetAttributeParser puppetAttributeParser) {
+                              final PuppetAttributeParser puppetAttributeParser)
+  {
     this.puppetPathUtils = checkNotNull(puppetPathUtils);
     this.puppetDataAccess = checkNotNull(puppetDataAccess);
     this.puppetAttributeParser = checkNotNull(puppetAttributeParser);

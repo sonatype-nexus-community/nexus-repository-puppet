@@ -35,7 +35,8 @@ public class PuppetAttributeParser
 
   @Inject
   public PuppetAttributeParser(final TgzParser tgzParser,
-                               final ObjectMapper objectMapper) {
+                               final ObjectMapper objectMapper)
+  {
     this.tgzParser = checkNotNull(tgzParser);
     this.objectMapper = checkNotNull(objectMapper);
   }

@@ -58,7 +58,8 @@ class PuppetProxyRecipe
 
   @Inject
   PuppetProxyRecipe(@Named(ProxyType.NAME) final Type type,
-                    @Named(PuppetFormat.NAME) final Format format) {
+                    @Named(PuppetFormat.NAME) final Format format)
+  {
     super(type, format)
   }
 
