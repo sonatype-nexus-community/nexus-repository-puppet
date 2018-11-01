@@ -113,47 +113,33 @@ abstract class PuppetRecipeSupport
    * Matcher for module releases.
    */
   static Matcher moduleReleasesSearchByNameMatcher() {
-    LogicMatchers.and(
-        new ActionMatcher(GET, HEAD),
-        new TokenMatcher('/v3/releases'),
-        new Matcher() {
-          @Override
-          boolean matches(final Context context) {
-            context.attributes.set(AssetKind.class, AssetKind.MODULE_RELEASES_BY_NAME)
-            return true
-          }
-        }
-    )
+    buildTokenMatcherForPatternAndAssetKind('/v3/releases', AssetKind.MODULE_RELEASES_BY_NAME, GET, HEAD)
   }
 
   /**
    * Matcher for a module release details.
    */
   static Matcher moduleReleaseByNameAndVersionMatcher() {
-    LogicMatchers.and(
-        new ActionMatcher(GET, HEAD),
-        new TokenMatcher('/v3/releases/{user:.+}-{module:.+}-{version:.+}'),
-        new Matcher() {
-          @Override
-          boolean matches(final Context context) {
-            context.attributes.set(AssetKind.class, AssetKind.MODULE_RELEASE_BY_NAME_AND_VERSION)
-            return true
-          }
-        }
-    )
+    buildTokenMatcherForPatternAndAssetKind('/v3/releases/{user:.+}-{module:.+}-{version:.+}',  AssetKind.MODULE_RELEASE_BY_NAME_AND_VERSION, GET, HEAD)
   }
 
   /**
    * Matcher for a downloading a module file.
    */
   static Matcher moduleDownloadMatcher() {
+    buildTokenMatcherForPatternAndAssetKind('/v3/files/{user:.+}-{module:.+}-{version:.+}.tar.gz', AssetKind.MODULE_DOWNLOAD, GET, HEAD)
+  }
+
+  static Matcher buildTokenMatcherForPatternAndAssetKind(final String pattern,
+                                                         final AssetKind assetKind,
+                                                         final String... actions) {
     LogicMatchers.and(
-        new ActionMatcher(GET, HEAD),
-        new TokenMatcher('/v3/files/{user:.+}-{module:.+}-{version:.+}.tar.gz'),
+        new ActionMatcher(actions),
+        new TokenMatcher(pattern),
         new Matcher() {
           @Override
           boolean matches(final Context context) {
-            context.attributes.set(AssetKind.class, AssetKind.MODULE_DOWNLOAD)
+            context.attributes.set(AssetKind.class, assetKind)
             return true
           }
         }
