@@ -238,7 +238,9 @@ public class PuppetProxyFacetImpl
 
     if (assetKind.equals(AssetKind.MODULE_RELEASES_BY_NAME)) {
       Parameters parameters = context.getRequest().getParameters();
-      url += "?" + Joiner.on("&").withKeyValueSeparator("=").join(parameters);
+      if (!parameters.isEmpty()) {
+        url += "?" + Joiner.on("&").withKeyValueSeparator("=").join(parameters);
+      }
     }
 
     return url;
