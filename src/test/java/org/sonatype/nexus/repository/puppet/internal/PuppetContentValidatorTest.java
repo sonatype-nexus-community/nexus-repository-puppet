@@ -17,7 +17,6 @@ import java.io.InputStream;
 import org.sonatype.goodies.testsupport.TestSupport;
 import org.sonatype.nexus.mime.MimeRulesSource;
 import org.sonatype.nexus.repository.storage.DefaultContentValidator;
-import org.sonatype.nexus.repository.view.ContentTypes;
 
 import com.google.common.base.Supplier;
 import org.junit.Before;
@@ -28,6 +27,7 @@ import static org.hamcrest.CoreMatchers.equalTo;
 import static org.hamcrest.CoreMatchers.is;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.mockito.Mockito.when;
+import static org.sonatype.nexus.repository.view.ContentTypes.*;
 
 public class PuppetContentValidatorTest
     extends TestSupport
@@ -54,34 +54,24 @@ public class PuppetContentValidatorTest
 
   @Test
   public void testContentValidatorJson() throws Exception {
-    setUpMock(
-        TEST_JSON_CONTENT_NAME + ".json",
-        ContentTypes.APPLICATION_JSON,
-        false);
-    String result = underTest.determineContentType(
-        true,
-        contentStream,
-        mimeRulesSource,
-        TEST_JSON_CONTENT_NAME,
-        ContentTypes.APPLICATION_JSON);
+    setUpMock(TEST_JSON_CONTENT_NAME + ".json", APPLICATION_JSON, false);
 
-    assertThat(result, is(equalTo(ContentTypes.APPLICATION_JSON)));
+    String result = underTest.determineContentType(
+        true, contentStream, mimeRulesSource, TEST_JSON_CONTENT_NAME, APPLICATION_JSON
+    );
+
+    assertThat(result, is(equalTo(APPLICATION_JSON)));
   }
 
   @Test
   public void testContentValidatorTarGz() throws Exception {
-    setUpMock(
-        TEST_TAR_GZ_CONTENT_NAME,
-        ContentTypes.APPLICATION_GZIP,
-        true);
-    String result = underTest.determineContentType(
-        true,
-        contentStream,
-        mimeRulesSource,
-        TEST_TAR_GZ_CONTENT_NAME,
-        ContentTypes.APPLICATION_GZIP);
+    setUpMock(TEST_TAR_GZ_CONTENT_NAME, APPLICATION_GZIP, true);
 
-    assertThat(result, is(equalTo(ContentTypes.APPLICATION_GZIP)));
+    String result = underTest.determineContentType(
+        true, contentStream, mimeRulesSource, TEST_TAR_GZ_CONTENT_NAME, APPLICATION_GZIP
+    );
+
+    assertThat(result, is(equalTo(APPLICATION_GZIP)));
   }
 
   private void setUpMock(final String contentName,
@@ -89,11 +79,7 @@ public class PuppetContentValidatorTest
                          final boolean strictContentTypeValidation) throws Exception
   {
     when(defaultContentValidator.determineContentType(
-        strictContentTypeValidation,
-        contentStream,
-        mimeRulesSource,
-        contentName,
-        contentType))
-        .thenReturn(contentType);
+            strictContentTypeValidation, contentStream, mimeRulesSource, contentName, contentType)
+    ).thenReturn(contentType);
   }
 }
