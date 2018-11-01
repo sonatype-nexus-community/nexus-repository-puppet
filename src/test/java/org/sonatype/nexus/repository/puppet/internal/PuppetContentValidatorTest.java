@@ -32,20 +32,20 @@ import static org.mockito.Mockito.when;
 public class PuppetContentValidatorTest
     extends TestSupport
 {
-  private PuppetContentValidator underTest;
-
-  @Mock
-  DefaultContentValidator defaultContentValidator;
-
-  @Mock
-  Supplier<InputStream> contentStream;
-
-  @Mock
-  MimeRulesSource mimeRulesSource;
-
   private final static String TEST_JSON_CONTENT_NAME = "testjsonwithoutextension";
 
   private final static String TEST_TAR_GZ_CONTENT_NAME = "test.tar.gz";
+
+  private PuppetContentValidator underTest;
+
+  @Mock
+  private DefaultContentValidator defaultContentValidator;
+
+  @Mock
+  private Supplier<InputStream> contentStream;
+
+  @Mock
+  private MimeRulesSource mimeRulesSource;
 
   @Before
   public void setUp() throws Exception {
