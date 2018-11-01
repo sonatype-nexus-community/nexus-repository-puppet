@@ -46,13 +46,12 @@ public class PuppetContentValidator
     this.defaultContentValidator = checkNotNull(defaultContentValidator);
   }
 
-  @Nonnull
   @Override
-  public String determineContentType(boolean strictContentTypeValidation,
-                                     Supplier<InputStream> contentSupplier,
-                                     @Nullable MimeRulesSource mimeRulesSource,
-                                     @Nullable String contentName,
-                                     @Nullable String declaredContentType) throws IOException
+  public String determineContentType(final boolean strictContentTypeValidation,
+                                     final Supplier<InputStream> contentSupplier,
+                                     final @Nullable MimeRulesSource mimeRulesSource,
+                                     final @Nullable String contentName,
+                                     final @Nullable String declaredContentType) throws IOException
   {
     if (contentName != null) {
       if (!contentName.endsWith(".tar.gz")) {
