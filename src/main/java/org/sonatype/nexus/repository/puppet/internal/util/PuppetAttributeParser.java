@@ -31,7 +31,7 @@ public class PuppetAttributeParser
 {
   private final TgzParser tgzParser;
 
-  private ObjectMapper objectMapper;
+  private final ObjectMapper objectMapper;
 
   @Inject
   public PuppetAttributeParser(final TgzParser tgzParser,
