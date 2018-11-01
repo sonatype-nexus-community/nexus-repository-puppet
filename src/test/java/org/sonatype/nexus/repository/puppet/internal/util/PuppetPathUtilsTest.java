@@ -82,6 +82,16 @@ public class PuppetPathUtilsTest
   }
 
   @Test
+  public void buildModuleReleaseByNamePathNoParameters() throws Exception {
+    ListMultimap<String, String> entries = MultimapBuilder.linkedHashKeys().arrayListValues().build();
+    Parameters parameters = new Parameters(entries);
+
+    String result = underTest.buildModuleReleaseByNamePath(parameters);
+
+    assertThat(result, is(equalTo("/v3/releases")));
+  }
+
+  @Test
   public void buildModuleDownloadPath() throws Exception {
     setupTokens();
 

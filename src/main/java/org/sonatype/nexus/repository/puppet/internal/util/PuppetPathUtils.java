@@ -59,6 +59,9 @@ public class PuppetPathUtils
   }
 
   public String buildModuleReleaseByNamePath(final Parameters parameters) {
+    if (parameters.isEmpty()) {
+      return "/v3/releases";
+    }
     return String.format("/v3/releases?%s", Joiner.on("&").withKeyValueSeparator("=").join(parameters));
   }
 
