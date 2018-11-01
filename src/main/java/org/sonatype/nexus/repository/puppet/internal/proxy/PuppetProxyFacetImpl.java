@@ -81,7 +81,7 @@ public class PuppetProxyFacetImpl
 
   @Nullable
   @Override
-  protected Content getCachedContent(final Context context) throws IOException {
+  protected Content getCachedContent(final Context context) {
     AssetKind assetKind = context.getAttributes().require(AssetKind.class);
     TokenMatcher.State matcherState = puppetPathUtils.matcherState(context);
     switch (assetKind) {
