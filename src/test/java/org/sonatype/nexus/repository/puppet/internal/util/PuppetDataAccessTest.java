@@ -45,6 +45,14 @@ import static org.mockito.Mockito.when;
 public class PuppetDataAccessTest
     extends TestSupport
 {
+  private static final String NAME = "test";
+
+  private static final String VERSION = "1.0.0";
+
+  private static final String CONTENT = "content";
+
+  private static final String PUPPET_LABS_STDLIB_5_1_0_TAR_GZ = "puppetlabs-stdlib-5.1.0.tar.gz";
+
   @Mock
   private StorageTx tx;
 
@@ -86,7 +94,7 @@ public class PuppetDataAccessTest
     List<Component> list = new ArrayList<>();
     list.add(component);
     when(tx.findComponents(any(), any())).thenReturn(list);
-    Component result = underTest.findComponent(tx, repository, "test", "1.0.0");
+    Component result = underTest.findComponent(tx, repository, NAME, VERSION);
 
     assertThat(result, is(notNullValue()));
   }
@@ -95,28 +103,28 @@ public class PuppetDataAccessTest
   public void findComponentReturnsNull() throws Exception {
     List<Component> list = new ArrayList<>();
     when(tx.findComponents(any(), any())).thenReturn(list);
-    Component result = underTest.findComponent(tx, repository, "test", "1.0.0");
+    Component result = underTest.findComponent(tx, repository, NAME, VERSION);
 
     assertThat(result, is(nullValue()));
   }
 
   @Test
   public void findAssetReturnsAsset() throws Exception {
-    when(tx.findAssetWithProperty("name", "test", bucket)).thenReturn(asset);
+    when(tx.findAssetWithProperty("name", NAME, bucket)).thenReturn(asset);
 
-    Asset result = underTest.findAsset(tx, bucket, "test");
+    Asset result = underTest.findAsset(tx, bucket, NAME);
 
     assertThat(result, is(notNullValue()));
   }
 
   @Test
   public void saveAssetReturnsContent() throws Exception {
-    InputStream is = getClass().getResourceAsStream("puppetlabs-stdlib-5.1.0.tar.gz");
+    InputStream is = getClass().getResourceAsStream(PUPPET_LABS_STDLIB_5_1_0_TAR_GZ);
     when(sis.get()).thenReturn(is);
     Map<String, Object> map = new HashMap<>();
-    nestedAttributesMap = new NestedAttributesMap("content", map);
-    when(asset.name()).thenReturn("name");
-    when(tx.setBlob(asset, "name", sis, PuppetDataAccess.HASH_ALGORITHMS, null, null, false )).thenReturn(assetBlob);
+    nestedAttributesMap = new NestedAttributesMap(CONTENT, map);
+    when(asset.name()).thenReturn(NAME);
+    when(tx.setBlob(asset, NAME, sis, PuppetDataAccess.HASH_ALGORITHMS, null, null, false )).thenReturn(assetBlob);
     when(assetBlob.getBlob()).thenReturn(blob);
     when(asset.attributes()).thenReturn(nestedAttributesMap);
     Content result = underTest.saveAsset(tx, asset, sis, payload);
