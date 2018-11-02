@@ -21,8 +21,6 @@ import org.sonatype.nexus.repository.Format
 import org.sonatype.nexus.repository.RecipeSupport
 import org.sonatype.nexus.repository.Type
 import org.sonatype.nexus.repository.attributes.AttributesFacet
-import org.sonatype.nexus.repository.cache.NegativeCacheFacet
-import org.sonatype.nexus.repository.cache.NegativeCacheHandler
 import org.sonatype.nexus.repository.http.PartialFetchHandler
 import org.sonatype.nexus.repository.httpclient.HttpClientFacet
 import org.sonatype.nexus.repository.purge.PurgeUnusedFacet
@@ -32,12 +30,21 @@ import org.sonatype.nexus.repository.storage.DefaultComponentMaintenanceImpl
 import org.sonatype.nexus.repository.storage.StorageFacet
 import org.sonatype.nexus.repository.storage.UnitOfWorkHandler
 import org.sonatype.nexus.repository.view.ConfigurableViewFacet
+import org.sonatype.nexus.repository.view.Context
+import org.sonatype.nexus.repository.view.Matcher
 import org.sonatype.nexus.repository.view.handlers.BrowseUnsupportedHandler
 import org.sonatype.nexus.repository.view.handlers.ConditionalRequestHandler
 import org.sonatype.nexus.repository.view.handlers.ContentHeadersHandler
 import org.sonatype.nexus.repository.view.handlers.ExceptionHandler
 import org.sonatype.nexus.repository.view.handlers.HandlerContributor
 import org.sonatype.nexus.repository.view.handlers.TimingHandler
+import org.sonatype.nexus.repository.view.matchers.ActionMatcher
+import org.sonatype.nexus.repository.view.matchers.LiteralMatcher
+import org.sonatype.nexus.repository.view.matchers.logic.LogicMatchers
+import org.sonatype.nexus.repository.view.matchers.token.TokenMatcher
+
+import static org.sonatype.nexus.repository.http.HttpMethods.GET
+import static org.sonatype.nexus.repository.http.HttpMethods.HEAD
 
 /**
  * Support for Puppet recipes.
@@ -96,13 +103,44 @@ abstract class PuppetRecipeSupport
   @Inject
   Provider<PurgeUnusedFacet> purgeUnusedFacet
 
-  @Inject
-  Provider<NegativeCacheFacet> negativeCacheFacet
-
-  @Inject
-  NegativeCacheHandler negativeCacheHandler
-
   protected PuppetRecipeSupport(final Type type, final Format format) {
     super(type, format)
+  }
+
+  /**
+   * Matcher for module releases.
+   */
+  static Matcher moduleReleasesSearchByNameMatcher() {
+    buildTokenMatcherForPatternAndAssetKind('/v3/releases', AssetKind.MODULE_RELEASES_BY_NAME, GET, HEAD)
+  }
+
+  /**
+   * Matcher for a module release details.
+   */
+  static Matcher moduleReleaseByNameAndVersionMatcher() {
+    buildTokenMatcherForPatternAndAssetKind('/v3/releases/{user:.+}-{module:.+}-{version:.+}',  AssetKind.MODULE_RELEASE_BY_NAME_AND_VERSION, GET, HEAD)
+  }
+
+  /**
+   * Matcher for a downloading a module file.
+   */
+  static Matcher moduleDownloadMatcher() {
+    buildTokenMatcherForPatternAndAssetKind('/v3/files/{user:.+}-{module:.+}-{version:.+}.tar.gz', AssetKind.MODULE_DOWNLOAD, GET, HEAD)
+  }
+
+  static Matcher buildTokenMatcherForPatternAndAssetKind(final String pattern,
+                                                         final AssetKind assetKind,
+                                                         final String... actions) {
+    LogicMatchers.and(
+        new ActionMatcher(actions),
+        new TokenMatcher(pattern),
+        new Matcher() {
+          @Override
+          boolean matches(final Context context) {
+            context.attributes.set(AssetKind.class, assetKind)
+            return true
+          }
+        }
+    )
   }
 }
