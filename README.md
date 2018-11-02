@@ -15,6 +15,8 @@
 
 # Nexus Repository Puppet Format
 
+[![Build Status](https://travis-ci.org/sonatype-nexus-community/nexus-repository-puppet.svg?branch=master)](https://travis-ci.org/sonatype-nexus-community/nexus-repository-puppet) [![Join the chat at https://gitter.im/sonatype/nexus-developers](https://badges.gitter.im/sonatype/nexus-developers.svg)](https://gitter.im/sonatype/nexus-developers?utm_source=badge&utm_medium=badge&utm_campaign=pr-badge&utm_content=badge) [![DepShield Badge](https://depshield.sonatype.org/badges/sonatype-nexus-community/nexus-repository-puppet/depshield.svg)](https://depshield.github.io)
+
 ## Developing
 
 ### Requirements
@@ -78,11 +80,9 @@ All released versions can be found [here](https://github.com/sonatype-nexus-comm
 
 #### Proxy
 
-| Plugin Version               | Nexus Repository Version |
+| Plugin Version               | Implemented              |
 |------------------------------|--------------------------|
 | `puppet module install`      | :heavy_check_mark:       |
-
-`* these commands are not applicable to a proxy`
 
 ## Installing the plugin
 
