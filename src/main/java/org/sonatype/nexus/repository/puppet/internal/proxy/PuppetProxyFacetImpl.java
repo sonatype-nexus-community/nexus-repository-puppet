@@ -18,6 +18,7 @@ import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import javax.inject.Inject;
 import javax.inject.Named;
+import javax.validation.constraints.Null;
 
 import org.sonatype.nexus.repository.cache.CacheInfo;
 import org.sonatype.nexus.repository.config.Configuration;
@@ -142,17 +143,14 @@ public class PuppetProxyFacetImpl
 
     try (TempBlob tempBlob = storageFacet.createTempBlob(content.openInputStream(), PuppetDataAccess.HASH_ALGORITHMS)) {
       PuppetAttributes puppetAttributes = puppetAttributeParser.getAttributesFromInputStream(tempBlob.get());
-      return doPutCookbook(puppetAttributes, tempBlob, content, assetKind, assetPath);
+      Component component = findOrCreateComponent(puppetAttributes);
+
+      return findOrCreateAsset(tempBlob, content, assetKind, assetPath, component, null);
     }
   }
 
   @TransactionalStoreBlob
-  protected Content doPutCookbook(final PuppetAttributes puppetAttributes,
-                                  final TempBlob tempBlob,
-                                  final Content content,
-                                  final AssetKind assetKind,
-                                  final String assetPath) throws IOException
-  {
+  protected Component findOrCreateComponent(final PuppetAttributes puppetAttributes) {
     StorageTx tx = UnitOfWork.currentTx();
     Bucket bucket = tx.findBucket(getRepository());
 
@@ -168,14 +166,7 @@ public class PuppetProxyFacetImpl
     }
     tx.saveComponent(component);
 
-    Asset asset = puppetDataAccess.findAsset(tx, bucket, assetPath);
-    if (asset == null) {
-      asset = tx.createAsset(bucket, component);
-      asset.name(assetPath);
-      asset.formatAttributes().set(P_ASSET_KIND, assetKind.name());
-    }
-
-    return puppetDataAccess.saveAsset(tx, asset, tempBlob, content);
+    return component;
   }
 
   private Content putMetadata(final Content content,
@@ -185,25 +176,36 @@ public class PuppetProxyFacetImpl
     StorageFacet storageFacet = facet(StorageFacet.class);
 
     try (TempBlob tempBlob = storageFacet.createTempBlob(content.openInputStream(), PuppetDataAccess.HASH_ALGORITHMS)) {
-      return doPutMetadata(tempBlob, content, assetKind, assetPath);
+      return findOrCreateAsset(tempBlob, content, assetKind, assetPath, null, ContentTypes.APPLICATION_JSON);
     }
   }
 
   @TransactionalStoreBlob
-  protected Content doPutMetadata(final TempBlob tempBlob,
-                                final Content content,
-                                final AssetKind assetKind,
-                                final String assetPath) throws IOException
+  protected Content findOrCreateAsset(final TempBlob tempBlob,
+                                      final Content content,
+                                      final AssetKind assetKind,
+                                      final String assetPath,
+                                      @Nullable final Component component,
+                                      @Nullable final String contentType) throws IOException
   {
     StorageTx tx = UnitOfWork.currentTx();
     Bucket bucket = tx.findBucket(getRepository());
 
     Asset asset = puppetDataAccess.findAsset(tx, bucket, assetPath);
-    if (asset == null) {
-      asset = tx.createAsset(bucket, getRepository().getFormat());
-      asset.name(assetPath);
-      asset.contentType(ContentTypes.APPLICATION_JSON);
-      asset.formatAttributes().set(P_ASSET_KIND, assetKind.name());
+
+    if (assetKind.equals(AssetKind.MODULE_DOWNLOAD)) {
+      if (asset == null) {
+        asset = tx.createAsset(bucket, component);
+        asset.name(assetPath);
+        asset.formatAttributes().set(P_ASSET_KIND, assetKind.name());
+      }
+    } else {
+      if (asset == null) {
+        asset = tx.createAsset(bucket, getRepository().getFormat());
+        asset.name(assetPath);
+        asset.contentType(contentType);
+        asset.formatAttributes().set(P_ASSET_KIND, assetKind.name());
+      }
     }
 
     return puppetDataAccess.saveAsset(tx, asset, tempBlob, content);
