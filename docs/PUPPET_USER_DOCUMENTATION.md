@@ -34,9 +34,11 @@ detail. Minimal configuration steps are:
 
 ### Configuring Puppet 
 
-Configuring Puppet to use Nexus Repository is fairly easy! 
+There are relatively few steps for configuring Puppet to use Nexus Repository:
 
 You'll need to have Puppet installed, for interaction with the Puppet Forge.
+
+NOTE: These instructions are Linux/OS X specific.
 
 Once you have Puppet up and running you'll want to run commands similar to the following:
 
@@ -48,7 +50,7 @@ In this file you'll need to add:
 
 `module_repository = 'http://nexushostname:nexusport/repository/puppet-proxy-name'`
 
-Once you've done this, you should be ready to install Puppet modules via  puppet install module !
+Once you've done this, you should be ready to install Puppet modules via `puppet install module`!
 
 ### Browsing Puppet Repository Packages
 
