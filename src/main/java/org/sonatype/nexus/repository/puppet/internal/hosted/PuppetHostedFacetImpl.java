@@ -27,6 +27,7 @@ import org.sonatype.nexus.repository.puppet.internal.AssetKind;
 import org.sonatype.nexus.repository.puppet.internal.PuppetAssetAttributePopulator;
 import org.sonatype.nexus.repository.puppet.internal.metadata.ModuleReleaseResultBuilder;
 import org.sonatype.nexus.repository.puppet.internal.metadata.ModuleReleases;
+import org.sonatype.nexus.repository.puppet.internal.metadata.ModuleReleasesBuilder;
 import org.sonatype.nexus.repository.puppet.internal.metadata.ModuleReleasesResult;
 import org.sonatype.nexus.repository.puppet.internal.metadata.PuppetAttributes;
 import org.sonatype.nexus.repository.puppet.internal.util.PuppetAttributeParser;
@@ -70,6 +71,8 @@ public class PuppetHostedFacetImpl
 
   private final ModuleReleaseResultBuilder builder;
 
+  private final ModuleReleasesBuilder moduleReleasesBuilder;
+
   @Override
   protected void doInit(final Configuration configuration) throws Exception {
     super.doInit(configuration);
@@ -79,12 +82,14 @@ public class PuppetHostedFacetImpl
   public PuppetHostedFacetImpl(final PuppetDataAccess dataAccess,
                                final PuppetAttributeParser puppetAttributeParser,
                                final PuppetAssetAttributePopulator puppetAssetAttributePopulator,
-                               final ModuleReleaseResultBuilder builder) {
+                               final ModuleReleaseResultBuilder builder,
+                               final ModuleReleasesBuilder moduleReleasesBuilder) {
 
     this.dataAccess = checkNotNull(dataAccess);
     this.puppetAttributeParser = checkNotNull(puppetAttributeParser);
     this.puppetAssetAttributePopulator = checkNotNull(puppetAssetAttributePopulator);
     this.builder = checkNotNull(builder);
+    this.moduleReleasesBuilder = checkNotNull(moduleReleasesBuilder);
   }
 
   @Nullable
@@ -130,15 +135,18 @@ public class PuppetHostedFacetImpl
     }
     StorageTx tx = UnitOfWork.currentTx();
 
-    ModuleReleases releases = new ModuleReleases();
+    ModuleReleases releases = moduleReleasesBuilder.parse();
+
     for (Asset asset : dataAccess.findAssets(tx, getRepository(), module)) {
       ModuleReleasesResult result = builder.parse(asset);
       releases.addResult(result);
     }
+
     ObjectMapper objectMapper = new ObjectMapper();
+
     try {
       String results = objectMapper.writeValueAsString(releases);
-      log.info("DANIEL WAS HERE: " + results);
+
       return new Content(new BytesPayload(results.getBytes(), ContentTypes.APPLICATION_JSON));
     }
     catch (JsonProcessingException e) {

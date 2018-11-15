@@ -12,32 +12,20 @@
  */
 package org.sonatype.nexus.repository.puppet.internal.metadata;
 
-import java.util.ArrayList;
-import java.util.List;
-
-public final class ModuleReleases
+public class ModuleReleasesBuilder
 {
-  private List<ModuleReleasesResult> results;
-
-  private ModulePagination pagination;
-
-  public ModuleReleases() {
-    this.results = new ArrayList<>();
+  public ModuleReleasesBuilder() {
+    // no-op
   }
 
-  public void addResult(final ModuleReleasesResult result) {
-    this.results.add(result);
+  public ModuleReleases parse() {
+    ModuleReleases releases = new ModuleReleases();
+    releases.setPagination(parsePagination());
+    return releases;
   }
 
-  public List<ModuleReleasesResult> getResults() {
-    return this.results;
-  }
-
-  public ModulePagination getPagination() {
-    return pagination;
-  }
-
-  public void setPagination(final ModulePagination pagination) {
-    this.pagination = pagination;
+  private ModulePagination parsePagination() {
+    // TODO: fill in all the pagination fun times
+    return new ModulePagination();
   }
 }
