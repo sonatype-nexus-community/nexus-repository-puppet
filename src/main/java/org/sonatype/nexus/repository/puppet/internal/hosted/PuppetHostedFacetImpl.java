@@ -14,6 +14,8 @@ package org.sonatype.nexus.repository.puppet.internal.hosted;
 
 import java.io.IOException;
 import java.io.InputStream;
+import java.io.UnsupportedEncodingException;
+import java.net.URLDecoder;
 
 import javax.annotation.Nullable;
 import javax.inject.Inject;
@@ -23,6 +25,9 @@ import org.sonatype.nexus.repository.FacetSupport;
 import org.sonatype.nexus.repository.config.Configuration;
 import org.sonatype.nexus.repository.puppet.internal.AssetKind;
 import org.sonatype.nexus.repository.puppet.internal.PuppetAssetAttributePopulator;
+import org.sonatype.nexus.repository.puppet.internal.metadata.ModuleReleaseResultBuilder;
+import org.sonatype.nexus.repository.puppet.internal.metadata.ModuleReleases;
+import org.sonatype.nexus.repository.puppet.internal.metadata.ModuleReleasesResult;
 import org.sonatype.nexus.repository.puppet.internal.metadata.PuppetAttributes;
 import org.sonatype.nexus.repository.puppet.internal.util.PuppetAttributeParser;
 import org.sonatype.nexus.repository.puppet.internal.util.PuppetDataAccess;
@@ -34,10 +39,16 @@ import org.sonatype.nexus.repository.storage.StorageTx;
 import org.sonatype.nexus.repository.storage.TempBlob;
 import org.sonatype.nexus.repository.transaction.TransactionalStoreBlob;
 import org.sonatype.nexus.repository.transaction.TransactionalTouchBlob;
+import org.sonatype.nexus.repository.transaction.TransactionalTouchMetadata;
 import org.sonatype.nexus.repository.view.Content;
+import org.sonatype.nexus.repository.view.ContentTypes;
+import org.sonatype.nexus.repository.view.Parameters;
 import org.sonatype.nexus.repository.view.Payload;
+import org.sonatype.nexus.repository.view.payloads.BytesPayload;
 import org.sonatype.nexus.transaction.UnitOfWork;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.common.base.Supplier;
 
 import static com.google.common.base.Preconditions.checkNotNull;
@@ -57,6 +68,8 @@ public class PuppetHostedFacetImpl
 
   private PuppetAttributeParser puppetAttributeParser;
 
+  private final ModuleReleaseResultBuilder builder;
+
   @Override
   protected void doInit(final Configuration configuration) throws Exception {
     super.doInit(configuration);
@@ -65,11 +78,13 @@ public class PuppetHostedFacetImpl
   @Inject
   public PuppetHostedFacetImpl(final PuppetDataAccess dataAccess,
                                final PuppetAttributeParser puppetAttributeParser,
-                               final PuppetAssetAttributePopulator puppetAssetAttributePopulator) {
+                               final PuppetAssetAttributePopulator puppetAssetAttributePopulator,
+                               final ModuleReleaseResultBuilder builder) {
 
     this.dataAccess = checkNotNull(dataAccess);
     this.puppetAttributeParser = checkNotNull(puppetAttributeParser);
     this.puppetAssetAttributePopulator = checkNotNull(puppetAssetAttributePopulator);
+    this.builder = checkNotNull(builder);
   }
 
   @Nullable
@@ -101,6 +116,35 @@ public class PuppetHostedFacetImpl
     try (TempBlob tempBlob = facet(StorageFacet.class).createTempBlob(payload, HASH_ALGORITHMS)) {
       storeModule(path, tempBlob, payload);
     }
+  }
+
+  @Override
+  @TransactionalTouchMetadata
+  public Content searchByName(final Parameters parameters) {
+    String module = parameters.get("module");
+    try {
+      module = URLDecoder.decode(module, "UTF-8");
+    }
+    catch (UnsupportedEncodingException e) {
+      e.printStackTrace();
+    }
+    StorageTx tx = UnitOfWork.currentTx();
+
+    ModuleReleases releases = new ModuleReleases();
+    for (Asset asset : dataAccess.findAssets(tx, getRepository(), module)) {
+      ModuleReleasesResult result = builder.parse(asset);
+      releases.addResult(result);
+    }
+    ObjectMapper objectMapper = new ObjectMapper();
+    try {
+      String results = objectMapper.writeValueAsString(releases);
+      log.info("DANIEL WAS HERE: " + results);
+      return new Content(new BytesPayload(results.getBytes(), ContentTypes.APPLICATION_JSON));
+    }
+    catch (JsonProcessingException e) {
+      e.printStackTrace();
+    }
+    return null;
   }
 
   @TransactionalStoreBlob

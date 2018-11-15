@@ -105,6 +105,18 @@ class PuppetHostedRecipe
         .handler(hostedHandlers.upload)
         .create())
 
+    builder.route(new Route.Builder().matcher(moduleReleasesSearchByNameMatcher())
+        .handler(timingHandler)
+        .handler(securityHandler)
+        .handler(exceptionHandler)
+        .handler(handlerContributor)
+        .handler(conditionalRequestHandler)
+        .handler(partialFetchHandler)
+        .handler(contentHeadersHandler)
+        .handler(unitOfWorkHandler)
+        .handler(hostedHandlers.searchByName)
+        .create())
+
     builder.route(new Route.Builder()
         .matcher(BrowseUnsupportedHandler.MATCHER)
         .handler(browseUnsupportedHandler)

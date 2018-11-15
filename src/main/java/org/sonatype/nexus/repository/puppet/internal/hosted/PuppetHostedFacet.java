@@ -18,6 +18,7 @@ import org.sonatype.nexus.repository.Facet;
 import org.sonatype.nexus.repository.Facet.Exposed;
 import org.sonatype.nexus.repository.puppet.internal.AssetKind;
 import org.sonatype.nexus.repository.view.Content;
+import org.sonatype.nexus.repository.view.Parameters;
 import org.sonatype.nexus.repository.view.Payload;
 
 @Exposed
@@ -27,4 +28,6 @@ public interface PuppetHostedFacet
   Content get(String path);
 
   void upload(String path, Payload payload, final AssetKind assetKind) throws IOException;
+
+  Content searchByName(Parameters parameters);
 }

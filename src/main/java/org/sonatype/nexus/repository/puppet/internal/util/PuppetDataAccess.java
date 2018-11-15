@@ -18,6 +18,7 @@ import java.util.List;
 
 import javax.annotation.Nullable;
 import javax.inject.Named;
+import javax.validation.constraints.Null;
 
 import org.sonatype.nexus.blobstore.api.Blob;
 import org.sonatype.nexus.common.collect.AttributesMap;
@@ -71,6 +72,25 @@ public class PuppetDataAccess
       return components.iterator().next();
     }
     return null;
+  }
+
+  /**
+   * Find all assets
+   *
+   * @return all assets for a component
+   */
+  @Nullable
+  public Iterable<Asset> findAssets(final StorageTx tx,
+                                    final Repository repository,
+                                    final String module)
+  {
+    Iterable<Asset> assets = tx.findAssets(
+        Query.builder()
+            .where("attributes.puppet.name").eq(module)
+            .build(),
+        singletonList(repository)
+    );
+    return assets;
   }
 
   /**

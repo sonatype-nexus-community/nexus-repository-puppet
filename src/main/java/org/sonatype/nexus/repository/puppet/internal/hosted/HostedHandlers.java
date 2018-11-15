@@ -21,6 +21,7 @@ import org.sonatype.nexus.repository.puppet.internal.AssetKind;
 import org.sonatype.nexus.repository.puppet.internal.util.PuppetPathUtils;
 import org.sonatype.nexus.repository.view.Content;
 import org.sonatype.nexus.repository.view.Handler;
+import org.sonatype.nexus.repository.view.Parameters;
 import org.sonatype.nexus.repository.view.matchers.token.TokenMatcher;
 import org.sonatype.nexus.repository.view.matchers.token.TokenMatcher.State;
 
@@ -60,5 +61,13 @@ public class HostedHandlers
     context.getRepository().facet(PuppetHostedFacet.class).upload(path, context.getRequest().getPayload(), assetKind);
 
     return ok();
+  };
+
+  final Handler searchByName = context -> {
+    Parameters parameters = context.getRequest().getParameters();
+
+    Content content = context.getRepository().facet(PuppetHostedFacet.class).searchByName(parameters);
+
+    return (content != null) ? ok(content) : notFound();
   };
 }
