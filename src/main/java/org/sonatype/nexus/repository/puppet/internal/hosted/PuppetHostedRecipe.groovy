@@ -15,6 +15,7 @@ package org.sonatype.nexus.repository.puppet.internal.hosted
 import javax.annotation.Nonnull
 import javax.inject.Inject
 import javax.inject.Named
+import javax.inject.Provider
 import javax.inject.Singleton
 
 import org.sonatype.nexus.repository.Format
@@ -49,6 +50,12 @@ class PuppetHostedRecipe
     extends PuppetRecipeSupport
 {
   public static final String NAME = 'puppet-hosted'
+
+  @Inject
+  HostedHandlers hostedHandlers
+
+  @Inject
+  Provider<PuppetHostedFacetImpl> hostedFacet
 
   @Inject
   PuppetHostedRecipe(@Named(HostedType.NAME) final Type type, @Named(PuppetFormat.NAME) final Format format) {
@@ -113,7 +120,7 @@ class PuppetHostedRecipe
   static Matcher moduleUploadMatcher() {
     LogicMatchers.and(
         new ActionMatcher(PUT),
-        tokenMatcherForExtensionAndName('tar.gz'),
+        tokenMatcherForExtensionAndName(),
         new Matcher() {
           @Override
           boolean matches(final Context context) {
@@ -124,7 +131,7 @@ class PuppetHostedRecipe
     )
   }
 
-  static TokenMatcher tokenMatcherForExtensionAndName(final String extension, final String filename = '.+') {
-    new TokenMatcher("/{filename:${filename}}.{extension:${extension}}")
+  static TokenMatcher tokenMatcherForExtensionAndName() {
+    new TokenMatcher("/{user:.+}-{module:.+}-{version:.+}.tar.gz")
   }
 }

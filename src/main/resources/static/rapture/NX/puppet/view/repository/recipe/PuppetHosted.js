@@ -10,21 +10,32 @@
  * of Sonatype, Inc. Apache Maven is a trademark of the Apache Software Foundation. M2eclipse is a trademark of the
  * Eclipse Foundation. All other trademarks are the property of their respective owners.
  */
-package org.sonatype.nexus.repository.puppet.internal.hosted;
+/*global Ext, NX*/
 
-import java.io.IOException;
+/**
+ * Repository "Settings" form for a puppet Hosted repository.
+ *
+ * @since 0.0.2
+ */
+Ext.define('NX.coreui.view.repository.recipe.PuppetHosted', {
+  extend: 'NX.coreui.view.repository.RepositorySettingsForm',
+  alias: 'widget.nx-coreui-repository-puppet-hosted',
+  requires: [
+    'NX.coreui.view.repository.facet.StorageFacet',
+    'NX.coreui.view.repository.facet.StorageFacetHosted'
+  ],
 
-import org.sonatype.nexus.repository.Facet;
-import org.sonatype.nexus.repository.Facet.Exposed;
-import org.sonatype.nexus.repository.puppet.internal.AssetKind;
-import org.sonatype.nexus.repository.view.Content;
-import org.sonatype.nexus.repository.view.Payload;
+  /**
+   * @override
+   */
+  initComponent: function() {
+    var me = this;
 
-@Exposed
-public interface PuppetHostedFacet
-    extends Facet
-{
-  Content get(String path);
+    me.items = [
+      { xtype: 'nx-coreui-repository-storage-facet'},
+      { xtype: 'nx-coreui-repository-storage-hosted-facet'}
+    ];
 
-  void upload(String path, Payload payload, final AssetKind assetKind) throws IOException;
-}
+    me.callParent();
+  }
+});
