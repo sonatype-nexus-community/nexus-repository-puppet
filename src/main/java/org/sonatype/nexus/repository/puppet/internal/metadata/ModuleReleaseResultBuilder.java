@@ -64,6 +64,6 @@ public class ModuleReleaseResultBuilder
     metadata.setSource(asset.formatAttributes().get("source").toString());
     metadata.setSummary(asset.formatAttributes().get("summary").toString());
 
-    return new ModuleMetadata();
+    return metadata;
   }
 }
