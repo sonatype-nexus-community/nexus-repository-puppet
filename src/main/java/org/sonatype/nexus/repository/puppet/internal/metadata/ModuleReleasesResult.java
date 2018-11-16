@@ -15,10 +15,24 @@ package org.sonatype.nexus.repository.puppet.internal.metadata;
 public class ModuleReleasesResult
 {
   private String uri;
+
   private String slug;
+
   private String version;
+
   private String file_uri;
+
   private String file_md5;
+
+  private ModuleMetadata metadata;
+
+  public ModuleMetadata getMetadata() {
+    return metadata;
+  }
+
+  public void setMetadata(final ModuleMetadata metadata) {
+    this.metadata = metadata;
+  }
 
   public String getUri() {
     return uri;

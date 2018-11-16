@@ -26,11 +26,12 @@ public class ModuleReleaseResultBuilder
 {
   public ModuleReleasesResult parse(final Asset asset) {
     ModuleReleasesResult result = new ModuleReleasesResult();
-    result.setSlug(parseSlug(asset.name(), asset.formatAttributes().get("version").toString()));
-    result.setUri(parseUri(asset.name(), asset.formatAttributes().get("version").toString()));
+    result.setSlug(parseSlug(asset.formatAttributes().get("name").toString(), asset.formatAttributes().get("version").toString()));
+    result.setUri(parseUri(asset.formatAttributes().get("name").toString(), asset.formatAttributes().get("version").toString()));
     result.setVersion(asset.formatAttributes().get("version").toString());
-    result.setFile_uri(parseFileUri(asset.name(), asset.formatAttributes().get("version").toString()));
+    result.setFile_uri(parseFileUri(asset.formatAttributes().get("name").toString(), asset.formatAttributes().get("version").toString()));
     result.setFile_md5(getMd5Checksum(asset.attributes()));
+    result.setMetadata(parseMetadata(asset));
 
     return result;
   }
@@ -49,5 +50,20 @@ public class ModuleReleaseResultBuilder
 
   private String getMd5Checksum(final NestedAttributesMap attributesMap) {
     return attributesMap.get("checksum", Map.class).get("md5").toString();
+  }
+
+  private ModuleMetadata parseMetadata(final Asset asset) {
+    ModuleMetadata metadata = new ModuleMetadata();
+
+    metadata.setAuthor(asset.formatAttributes().get("author").toString());
+    metadata.setLicense(asset.formatAttributes().get("license").toString());
+    metadata.setIssues_url(asset.formatAttributes().get("issues_url").toString());
+    metadata.setProject_page(asset.formatAttributes().get("project_page").toString());
+    metadata.setName(asset.formatAttributes().get("name").toString());
+    metadata.setVersion(asset.formatAttributes().get("version").toString());
+    metadata.setSource(asset.formatAttributes().get("source").toString());
+    metadata.setSummary(asset.formatAttributes().get("summary").toString());
+
+    return new ModuleMetadata();
   }
 }
