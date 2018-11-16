@@ -30,4 +30,6 @@ public interface PuppetHostedFacet
   void upload(String path, Payload payload, final AssetKind assetKind) throws IOException;
 
   Content searchByName(Parameters parameters);
+
+  Content moduleByNameAndVersion(String user, String module, String version);
 }

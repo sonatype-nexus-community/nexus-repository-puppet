@@ -104,6 +104,16 @@ public class PuppetDataAccess
   }
 
   /**
+   * Find an asset by it's component
+   *
+   * @return found asset or null if not found
+   */
+  @Nullable
+  public Asset findAssetByComponent(final StorageTx tx, final Bucket bucket, final Component component) {
+    return tx.findAssetWithProperty(MetadataNodeEntityAdapter.P_BUCKET, bucket, component);
+  }
+
+  /**
    * Save an asset and create blob.
    *
    * @return blob content

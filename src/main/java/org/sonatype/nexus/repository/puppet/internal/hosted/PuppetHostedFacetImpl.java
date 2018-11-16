@@ -14,8 +14,6 @@ package org.sonatype.nexus.repository.puppet.internal.hosted;
 
 import java.io.IOException;
 import java.io.InputStream;
-import java.io.UnsupportedEncodingException;
-import java.net.URLDecoder;
 
 import javax.annotation.Nullable;
 import javax.inject.Inject;
@@ -73,6 +71,8 @@ public class PuppetHostedFacetImpl
 
   private final ModuleReleasesBuilder moduleReleasesBuilder;
 
+  private final ObjectMapper objectMapper;
+
   @Override
   protected void doInit(final Configuration configuration) throws Exception {
     super.doInit(configuration);
@@ -83,13 +83,15 @@ public class PuppetHostedFacetImpl
                                final PuppetAttributeParser puppetAttributeParser,
                                final PuppetAssetAttributePopulator puppetAssetAttributePopulator,
                                final ModuleReleaseResultBuilder builder,
-                               final ModuleReleasesBuilder moduleReleasesBuilder) {
+                               final ModuleReleasesBuilder moduleReleasesBuilder,
+                               final ObjectMapper objectMapper) {
 
     this.dataAccess = checkNotNull(dataAccess);
     this.puppetAttributeParser = checkNotNull(puppetAttributeParser);
     this.puppetAssetAttributePopulator = checkNotNull(puppetAssetAttributePopulator);
     this.builder = checkNotNull(builder);
     this.moduleReleasesBuilder = checkNotNull(moduleReleasesBuilder);
+    this.objectMapper = checkNotNull(objectMapper);
   }
 
   @Nullable
@@ -127,12 +129,7 @@ public class PuppetHostedFacetImpl
   @TransactionalTouchMetadata
   public Content searchByName(final Parameters parameters) {
     String module = parameters.get("module");
-    try {
-      module = URLDecoder.decode(module, "UTF-8");
-    }
-    catch (UnsupportedEncodingException e) {
-      e.printStackTrace();
-    }
+
     StorageTx tx = UnitOfWork.currentTx();
 
     ModuleReleases releases = moduleReleasesBuilder.parse();
@@ -151,6 +148,35 @@ public class PuppetHostedFacetImpl
     }
     catch (JsonProcessingException e) {
       e.printStackTrace();
+    }
+    return null;
+  }
+
+  @Override
+  @TransactionalTouchMetadata
+  public Content moduleByNameAndVersion(final String user,
+                                        final String module,
+                                        final String version)
+  {
+    StorageTx tx = UnitOfWork.currentTx();
+
+    String assetName = user + "-" + module;
+
+    Component component = dataAccess.findComponent(tx, getRepository(), assetName, version);
+
+    if (component != null) {
+      Asset asset = dataAccess.findAssetByComponent(tx, tx.findBucket(getRepository()), component);
+
+      ModuleReleasesResult result = builder.parse(asset);
+
+      try {
+        String results = objectMapper.writeValueAsString(result);
+
+        return new Content(new BytesPayload(results.getBytes(), ContentTypes.APPLICATION_JSON));
+      }
+      catch (JsonProcessingException e) {
+        e.printStackTrace();
+      }
     }
     return null;
   }

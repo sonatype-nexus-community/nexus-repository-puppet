@@ -70,4 +70,16 @@ public class HostedHandlers
 
     return (content != null) ? ok(content) : notFound();
   };
+
+  final Handler moduleByNameAndVersion = context -> {
+    State state = context.getAttributes().require(TokenMatcher.State.class);
+
+    String user = pathUtils.user(state);
+    String module = pathUtils.module(state);
+    String version = pathUtils.module(state);
+
+    Content content = context.getRepository().facet(PuppetHostedFacet.class).moduleByNameAndVersion(user, module, version);
+
+    return (content != null) ? ok(content) : notFound();
+  };
 }
