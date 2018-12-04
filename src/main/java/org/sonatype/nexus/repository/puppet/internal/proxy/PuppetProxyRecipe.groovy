@@ -83,7 +83,7 @@ class PuppetProxyRecipe
   private ViewFacet configure(final ConfigurableViewFacet facet) {
     Router.Builder builder = new Router.Builder()
 
-    [moduleReleaseByNameAndVersionMatcher(), moduleReleasesSearchByNameMatcher(), moduleDownloadMatcher()].each { matcher ->
+    [moduleReleaseByNameAndVersionMatcher(), moduleReleasesSearchByNameMatcher(), moduleDownloadMatcher(), moduleByNameMatcher()].each { matcher ->
       builder.route(new Route.Builder().matcher(matcher)
           .handler(timingHandler)
           .handler(securityHandler)

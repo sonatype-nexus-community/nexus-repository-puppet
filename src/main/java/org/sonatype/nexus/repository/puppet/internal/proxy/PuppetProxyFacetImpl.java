@@ -91,6 +91,8 @@ public class PuppetProxyFacetImpl
         return getAsset(puppetPathUtils.buildModuleReleaseByNamePath(parameters));
       case MODULE_RELEASE_BY_NAME_AND_VERSION:
         return getAsset(puppetPathUtils.buildModuleReleaseByNameAndVersionPath(matcherState));
+      case MODULE_BY_NAME:
+        return getAsset(puppetPathUtils.buildModuleByNamePath(matcherState));
       case MODULE_DOWNLOAD:
         return getAsset(puppetPathUtils.buildModuleDownloadPath(matcherState));
       default:
@@ -125,6 +127,10 @@ public class PuppetProxyFacetImpl
         return putMetadata(content,
             assetKind,
             puppetPathUtils.buildModuleReleaseByNameAndVersionPath(matcherState));
+      case MODULE_BY_NAME:
+        return putMetadata(content,
+            assetKind,
+            puppetPathUtils.buildModuleByNamePath(matcherState));
       case MODULE_DOWNLOAD:
         return putModule(content,
             assetKind,

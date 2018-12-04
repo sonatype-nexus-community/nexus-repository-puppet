@@ -58,6 +58,10 @@ public class PuppetPathUtils
     return String.format("/v3/releases/%s-%s-%s", user(matcherState), module(matcherState), version(matcherState));
   }
 
+  public String buildModuleByNamePath(final State matcherState) {
+    return String.format("/v3/modules/%s-%s", user(matcherState), module(matcherState));
+  }
+
   public String buildModuleReleaseByNamePath(final Parameters parameters) {
     if (parameters.isEmpty()) {
       return "/v3/releases";

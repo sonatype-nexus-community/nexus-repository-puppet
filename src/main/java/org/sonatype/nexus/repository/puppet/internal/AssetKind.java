@@ -27,6 +27,7 @@ import static org.sonatype.nexus.repository.cache.CacheControllerHolder.*;
 public enum AssetKind
 {
   MODULE_RELEASES_BY_NAME(METADATA),
+  MODULE_BY_NAME(METADATA),
   MODULE_RELEASE_BY_NAME_AND_VERSION(METADATA),
   MODULE_DOWNLOAD(CONTENT);
 
