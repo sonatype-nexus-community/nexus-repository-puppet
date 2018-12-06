@@ -80,9 +80,10 @@ All released versions can be found [here](https://github.com/sonatype-nexus-comm
 
 #### Proxy
 
-| Plugin Version               | Implemented              |
-|------------------------------|--------------------------|
-| `puppet module install`      | :heavy_check_mark:       |
+| Plugin Version                             | Implemented              |
+|--------------------------------------------|--------------------------|
+| `puppet module install`                    | :heavy_check_mark:       |
+| `librarian-puppet install --no-use-v1-api` | :heavy_check_mark:       |
 
 ## Installing the plugin
 
