@@ -37,8 +37,12 @@ import org.sonatype.nexus.repository.view.payloads.BlobPayload;
 
 import com.google.common.base.Supplier;
 import com.google.common.collect.ImmutableList;
+import org.elasticsearch.index.query.QueryBuilder;
+import org.elasticsearch.index.query.QueryBuilders;
+import org.elasticsearch.index.query.SimpleQueryStringBuilder;
 
 import static java.util.Collections.singletonList;
+import static org.sonatype.nexus.repository.search.DefaultComponentMetadataProducer.REPOSITORY_NAME;
 import static org.sonatype.nexus.repository.storage.ComponentEntityAdapter.P_VERSION;
 import static org.sonatype.nexus.repository.storage.MetadataNodeEntityAdapter.P_NAME;
 
@@ -85,12 +89,22 @@ public class PuppetDataAccess
                                     final String module)
   {
     Iterable<Asset> assets = tx.findAssets(
-        Query.builder()
-            .where("attributes.puppet.name").eq(module)
-            .build(),
-        singletonList(repository)
+      Query.builder()
+          .where("attributes.puppet.name").eq(module)
+          .build(),
+      singletonList(repository)
     );
     return assets;
+  }
+
+  public QueryBuilder buildNameQuery(final Repository repository,
+                                     final String module)
+  {
+    return QueryBuilders.boolQuery()
+        .must(QueryBuilders.simpleQueryStringQuery(module)
+            .field("name")
+            .defaultOperator(SimpleQueryStringBuilder.Operator.AND))
+        .filter(QueryBuilders.termQuery(REPOSITORY_NAME, repository.getName()));
   }
 
   /**

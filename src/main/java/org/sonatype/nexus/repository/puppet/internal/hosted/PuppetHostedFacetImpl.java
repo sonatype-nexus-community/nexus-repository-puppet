@@ -30,6 +30,7 @@ import org.sonatype.nexus.repository.puppet.internal.metadata.ModuleReleasesResu
 import org.sonatype.nexus.repository.puppet.internal.metadata.PuppetAttributes;
 import org.sonatype.nexus.repository.puppet.internal.util.PuppetAttributeParser;
 import org.sonatype.nexus.repository.puppet.internal.util.PuppetDataAccess;
+import org.sonatype.nexus.repository.search.SearchService;
 import org.sonatype.nexus.repository.storage.Asset;
 import org.sonatype.nexus.repository.storage.Bucket;
 import org.sonatype.nexus.repository.storage.Component;
@@ -41,6 +42,7 @@ import org.sonatype.nexus.repository.transaction.TransactionalTouchBlob;
 import org.sonatype.nexus.repository.transaction.TransactionalTouchMetadata;
 import org.sonatype.nexus.repository.view.Content;
 import org.sonatype.nexus.repository.view.ContentTypes;
+import org.sonatype.nexus.repository.view.Context;
 import org.sonatype.nexus.repository.view.Parameters;
 import org.sonatype.nexus.repository.view.Payload;
 import org.sonatype.nexus.repository.view.payloads.BytesPayload;
@@ -61,7 +63,7 @@ public class PuppetHostedFacetImpl
   implements PuppetHostedFacet
 {
 
-  private final PuppetDataAccess dataAccess;
+  private final PuppetDataAccess puppetDataAccess;
 
   private final PuppetAssetAttributePopulator puppetAssetAttributePopulator;
 
@@ -72,6 +74,8 @@ public class PuppetHostedFacetImpl
   private final ModuleReleasesBuilder moduleReleasesBuilder;
 
   private final ObjectMapper objectMapper;
+
+  private final SearchService searchService;
 
   @Override
   protected void doInit(final Configuration configuration) throws Exception {
@@ -84,14 +88,16 @@ public class PuppetHostedFacetImpl
                                final PuppetAssetAttributePopulator puppetAssetAttributePopulator,
                                final ModuleReleaseResultBuilder builder,
                                final ModuleReleasesBuilder moduleReleasesBuilder,
-                               final ObjectMapper objectMapper) {
+                               final ObjectMapper objectMapper,
+                               final SearchService searchService) {
 
-    this.dataAccess = checkNotNull(dataAccess);
+    this.puppetDataAccess = checkNotNull(dataAccess);
     this.puppetAttributeParser = checkNotNull(puppetAttributeParser);
     this.puppetAssetAttributePopulator = checkNotNull(puppetAssetAttributePopulator);
     this.builder = checkNotNull(builder);
     this.moduleReleasesBuilder = checkNotNull(moduleReleasesBuilder);
     this.objectMapper = checkNotNull(objectMapper);
+    this.searchService = checkNotNull(searchService);
   }
 
   @Nullable
@@ -101,7 +107,7 @@ public class PuppetHostedFacetImpl
     checkNotNull(path);
     StorageTx tx = UnitOfWork.currentTx();
 
-    Asset asset = dataAccess.findAsset(tx, tx.findBucket(getRepository()), path);
+    Asset asset = puppetDataAccess.findAsset(tx, tx.findBucket(getRepository()), path);
     if (asset == null) {
       return null;
     }
@@ -109,7 +115,7 @@ public class PuppetHostedFacetImpl
       tx.saveAsset(asset);
     }
 
-    return dataAccess.toContent(asset, tx.requireBlob(asset.requireBlobRef()));
+    return puppetDataAccess.toContent(asset, tx.requireBlob(asset.requireBlobRef()));
   }
 
   @Override
@@ -127,14 +133,40 @@ public class PuppetHostedFacetImpl
 
   @Override
   @TransactionalTouchMetadata
-  public Content searchByName(final Parameters parameters) {
+  public Content searchByName(final Parameters parameters, final Context context) {
     String module = parameters.get("module");
 
     StorageTx tx = UnitOfWork.currentTx();
 
-    ModuleReleases releases = moduleReleasesBuilder.parse();
+    long totalResults, resultsPerPage, resultsOffset;
 
-    for (Asset asset : dataAccess.findAssets(tx, getRepository(), module)) {
+    // Compute pagination information
+    totalResults = searchService.countUnrestricted(
+        puppetDataAccess.buildNameQuery(
+            context.getRepository(),
+            parameters.get("module")
+        )
+    );
+
+    try {
+      resultsPerPage = Long.parseLong(parameters.get("limit"));
+    }
+    catch (NumberFormatException e) {
+      resultsPerPage = 20;
+    }
+
+    try {
+      resultsOffset = Long.parseLong(parameters.get("offset"));
+    }
+    catch (NumberFormatException e){
+      resultsOffset = 0;
+    }
+
+    ModuleReleases releases = moduleReleasesBuilder.parse(totalResults, resultsPerPage, resultsOffset);
+
+    // TODO: retrieve results pertaining to the offset and limit as set above
+
+    for (Asset asset : puppetDataAccess.findAssets(tx, getRepository(), module)) {
       ModuleReleasesResult result = builder.parse(asset);
       releases.addResult(result);
     }
@@ -162,10 +194,10 @@ public class PuppetHostedFacetImpl
 
     String assetName = user + "-" + module;
 
-    Component component = dataAccess.findComponent(tx, getRepository(), assetName, version);
+    Component component = puppetDataAccess.findComponent(tx, getRepository(), assetName, version);
 
     if (component != null) {
-      Asset asset = dataAccess.findAssetByComponent(tx, tx.findBucket(getRepository()), component);
+      Asset asset = puppetDataAccess.findAssetByComponent(tx, tx.findBucket(getRepository()), component);
 
       ModuleReleasesResult result = builder.parse(asset);
 
@@ -191,7 +223,7 @@ public class PuppetHostedFacetImpl
 
     Asset asset = createModuleAsset(path, tx, bucket, moduleContent.get());
 
-    return dataAccess.saveAsset(tx, asset, moduleContent, payload);
+    return puppetDataAccess.saveAsset(tx, asset, moduleContent, payload);
   }
 
   private Asset createModuleAsset(final String path,
@@ -210,7 +242,7 @@ public class PuppetHostedFacetImpl
                                               final Bucket bucket,
                                               final PuppetAttributes module)
   {
-    Asset asset = dataAccess.findAsset(tx, bucket, path);
+    Asset asset = puppetDataAccess.findAsset(tx, bucket, path);
     if (asset == null) {
       Component component = findOrCreateComponent(tx, bucket, module);
       asset = tx.createAsset(bucket, component);
@@ -226,7 +258,7 @@ public class PuppetHostedFacetImpl
   private Component findOrCreateComponent(final StorageTx tx,
                                           final Bucket bucket,
                                           final PuppetAttributes module) {
-    Component component = dataAccess.findComponent(tx, getRepository(), module.getName(), module.getVersion());
+    Component component = puppetDataAccess.findComponent(tx, getRepository(), module.getName(), module.getVersion());
     if (component == null) {
       component = tx.createComponent(bucket, getRepository().getFormat())
           .name(module.getName())

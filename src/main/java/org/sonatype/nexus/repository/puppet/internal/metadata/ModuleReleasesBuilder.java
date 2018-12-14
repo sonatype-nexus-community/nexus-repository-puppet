@@ -18,14 +18,21 @@ public class ModuleReleasesBuilder
     // no-op
   }
 
-  public ModuleReleases parse() {
+  public ModuleReleases parse(final long total, final long limit, final long offset) {
     ModuleReleases releases = new ModuleReleases();
-    releases.setPagination(parsePagination());
+    releases.setPagination(parsePagination(total, limit, offset));
     return releases;
   }
 
-  private ModulePagination parsePagination() {
-    // TODO: fill in all the pagination fun times
-    return new ModulePagination();
+  private ModulePagination parsePagination(final long total, final long limit, final long offset) {
+    ModulePagination modulePagination = new ModulePagination();
+
+    modulePagination.setTotal(total);
+    modulePagination.setLimit(limit);
+    modulePagination.setOffset(offset);
+
+    // TODO: create first, previous, current, and next query URLs
+
+    return modulePagination;
   }
 }

@@ -14,9 +14,9 @@ package org.sonatype.nexus.repository.puppet.internal.metadata;
 
 public class ModulePagination
 {
-  private int limit;
+  private long limit;
 
-  private int offset;
+  private long offset;
 
   private String first;
 
@@ -26,21 +26,21 @@ public class ModulePagination
 
   private String next;
 
-  private int total;
+  private long total;
 
-  public int getLimit() {
+  public long getLimit() {
     return limit;
   }
 
-  public void setLimit(final int limit) {
+  public void setLimit(final long limit) {
     this.limit = limit;
   }
 
-  public int getOffset() {
+  public long getOffset() {
     return offset;
   }
 
-  public void setOffset(final int offset) {
+  public void setOffset(final long offset) {
     this.offset = offset;
   }
 
@@ -76,11 +76,11 @@ public class ModulePagination
     this.next = next;
   }
 
-  public int getTotal() {
+  public long getTotal() {
     return total;
   }
 
-  public void setTotal(final int total) {
+  public void setTotal(final long total) {
     this.total = total;
   }
 }

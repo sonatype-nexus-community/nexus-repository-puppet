@@ -18,7 +18,10 @@ import javax.inject.Singleton;
 
 import org.sonatype.goodies.common.ComponentSupport;
 import org.sonatype.nexus.repository.puppet.internal.AssetKind;
+import org.sonatype.nexus.repository.puppet.internal.metadata.ModulePagination;
+import org.sonatype.nexus.repository.puppet.internal.util.PuppetDataAccess;
 import org.sonatype.nexus.repository.puppet.internal.util.PuppetPathUtils;
+import org.sonatype.nexus.repository.search.SearchService;
 import org.sonatype.nexus.repository.view.Content;
 import org.sonatype.nexus.repository.view.Handler;
 import org.sonatype.nexus.repository.view.Parameters;
@@ -35,10 +38,13 @@ public class HostedHandlers
     extends ComponentSupport
 {
   private PuppetPathUtils pathUtils;
+  private PuppetDataAccess puppetDataAccess;
 
   @Inject
-  public HostedHandlers(final PuppetPathUtils pathUtils) {
+  public HostedHandlers(final PuppetPathUtils pathUtils,
+                        final PuppetDataAccess puppetDataAccess) {
     this.pathUtils = checkNotNull(pathUtils);
+    this.puppetDataAccess= checkNotNull(puppetDataAccess);
   }
 
   final Handler get = context -> {
@@ -66,7 +72,7 @@ public class HostedHandlers
   final Handler searchByName = context -> {
     Parameters parameters = context.getRequest().getParameters();
 
-    Content content = context.getRepository().facet(PuppetHostedFacet.class).searchByName(parameters);
+    Content content = context.getRepository().facet(PuppetHostedFacet.class).searchByName(parameters, context);
 
     return (content != null) ? ok(content) : notFound();
   };
