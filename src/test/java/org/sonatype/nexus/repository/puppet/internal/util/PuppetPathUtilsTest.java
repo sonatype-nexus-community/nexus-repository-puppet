@@ -92,6 +92,15 @@ public class PuppetPathUtilsTest
   }
 
   @Test
+  public void buildModuleByNamePath() throws Exception {
+    setupTokens();
+
+    String result = underTest.buildModuleByNamePath(mockState);
+
+    assertThat(result, is(equalTo("/v3/modules/puppetlabs-stdlib")));
+  }
+
+  @Test
   public void buildModuleDownloadPath() throws Exception {
     setupTokens();
 

@@ -115,6 +115,13 @@ abstract class PuppetRecipeSupport
   }
 
   /**
+   * Matcher for module by name
+   */
+  static Matcher moduleByNameMatcher() {
+    buildTokenMatcherForPatternAndAssetKind('/v3/modules/{user:.+}-{module:.+}', AssetKind.MODULE_BY_NAME, GET, HEAD)
+  }
+
+  /**
    * Matcher for a module release details.
    */
   static Matcher moduleReleaseByNameAndVersionMatcher() {
