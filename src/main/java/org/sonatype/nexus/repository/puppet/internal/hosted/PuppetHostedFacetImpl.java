@@ -162,7 +162,7 @@ public class PuppetHostedFacetImpl
       resultsOffset = 0;
     }
 
-    ModuleReleases releases = moduleReleasesBuilder.parse(totalResults, resultsPerPage, resultsOffset);
+    ModuleReleases releases = moduleReleasesBuilder.parse(totalResults, resultsPerPage, resultsOffset, context);
 
     // TODO: retrieve results pertaining to the offset and limit as set above
 

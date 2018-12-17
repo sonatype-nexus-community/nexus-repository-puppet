@@ -12,26 +12,62 @@
  */
 package org.sonatype.nexus.repository.puppet.internal.metadata;
 
+import javax.inject.Inject;
+
+import org.sonatype.nexus.repository.puppet.internal.util.PuppetPathUtils;
+import org.sonatype.nexus.repository.view.Context;
+import org.sonatype.nexus.repository.view.Parameters;
+
+import static com.google.common.base.Preconditions.checkNotNull;
+
 public class ModuleReleasesBuilder
 {
-  public ModuleReleasesBuilder() {
-    // no-op
+  private PuppetPathUtils puppetPathUtils;
+
+  @Inject
+  public ModuleReleasesBuilder(final PuppetPathUtils puppetPathUtils) {
+    this.puppetPathUtils = checkNotNull(puppetPathUtils);
   }
 
-  public ModuleReleases parse(final long total, final long limit, final long offset) {
+  public ModuleReleases parse(final long total, final long limit, final long offset, final Context context) {
     ModuleReleases releases = new ModuleReleases();
-    releases.setPagination(parsePagination(total, limit, offset));
+    releases.setPagination(parsePagination(total, limit, offset, context));
     return releases;
   }
 
-  private ModulePagination parsePagination(final long total, final long limit, final long offset) {
+  private ModulePagination parsePagination(final long total, final long limit, final long offset, final Context context) {
     ModulePagination modulePagination = new ModulePagination();
+    Parameters parameters = context.getRequest().getParameters();
 
     modulePagination.setTotal(total);
     modulePagination.setLimit(limit);
     modulePagination.setOffset(offset);
 
-    // TODO: create first, previous, current, and next query URLs
+    // First URL
+    parameters.replace("offset", "0");
+    modulePagination.setFirst(puppetPathUtils.buildModuleReleaseByNamePath(parameters));
+
+    // Previous URL
+    if (offset - limit > 0) {
+      parameters.replace("offset", Long.toString(offset - limit));
+      modulePagination.setPrevious(puppetPathUtils.buildModuleReleaseByNamePath(parameters));
+    }
+    else {
+      modulePagination.setPrevious(null);
+    }
+
+    // Current URL
+    parameters.replace("offset", Long.toString(offset));
+    modulePagination.setCurrent(puppetPathUtils.buildModuleReleaseByNamePath(parameters));
+
+    // Next URL
+    if (offset + limit < total) {
+      parameters.replace("total", Long.toString(offset + limit));
+      modulePagination.setNext(puppetPathUtils.buildModuleReleaseByNamePath(parameters));
+    }
+    else {
+      modulePagination.setNext(null);
+    }
 
     return modulePagination;
   }
