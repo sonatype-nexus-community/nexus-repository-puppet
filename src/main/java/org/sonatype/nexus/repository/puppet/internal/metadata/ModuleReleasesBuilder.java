@@ -12,6 +12,8 @@
  */
 package org.sonatype.nexus.repository.puppet.internal.metadata;
 
+import java.util.Map.Entry;
+
 import javax.inject.Inject;
 
 import org.sonatype.nexus.repository.puppet.internal.util.PuppetPathUtils;
@@ -43,27 +45,28 @@ public class ModuleReleasesBuilder
     modulePagination.setLimit(limit);
     modulePagination.setOffset(offset);
 
-    // First URL
-    parameters.replace("offset", "0");
-    modulePagination.setFirst(puppetPathUtils.buildModuleReleaseByNamePath(parameters));
+    Parameters newParameters = new Parameters();
+    for (Entry<String, String> param: parameters) {
+      newParameters.set(param.getKey(), param.getValue());
+    }
 
-    // Previous URL
+    newParameters.replace("offset", "0");
+    modulePagination.setFirst(puppetPathUtils.buildModuleReleaseByNamePath(newParameters));
+
+    newParameters.replace("offset", Long.toString(offset));
+    modulePagination.setCurrent(puppetPathUtils.buildModuleReleaseByNamePath(newParameters));
+
     if (offset - limit > 0) {
-      parameters.replace("offset", Long.toString(offset - limit));
-      modulePagination.setPrevious(puppetPathUtils.buildModuleReleaseByNamePath(parameters));
+      newParameters.replace("offset", Long.toString(offset - limit));
+      modulePagination.setPrevious(puppetPathUtils.buildModuleReleaseByNamePath(newParameters));
     }
     else {
       modulePagination.setPrevious(null);
     }
 
-    // Current URL
-    parameters.replace("offset", Long.toString(offset));
-    modulePagination.setCurrent(puppetPathUtils.buildModuleReleaseByNamePath(parameters));
-
-    // Next URL
     if (offset + limit < total) {
-      parameters.replace("total", Long.toString(offset + limit));
-      modulePagination.setNext(puppetPathUtils.buildModuleReleaseByNamePath(parameters));
+      newParameters.replace("total", Long.toString(offset + limit));
+      modulePagination.setNext(puppetPathUtils.buildModuleReleaseByNamePath(newParameters));
     }
     else {
       modulePagination.setNext(null);
