@@ -15,6 +15,8 @@
 
 # Nexus Repository Puppet Format
 
+[![Maven Central](https://maven-badges.herokuapp.com/maven-central/org.sonatype.nexus.plugins/nexus-repository-puppet/badge.svg)](https://maven-badges.herokuapp.com/maven-central/org.sonatype.nexus.plugins/nexus-repository-puppet)
+
 [![Build Status](https://travis-ci.org/sonatype-nexus-community/nexus-repository-puppet.svg?branch=master)](https://travis-ci.org/sonatype-nexus-community/nexus-repository-puppet) [![Join the chat at https://gitter.im/sonatype/nexus-developers](https://badges.gitter.im/sonatype/nexus-developers.svg)](https://gitter.im/sonatype/nexus-developers?utm_source=badge&utm_medium=badge&utm_campaign=pr-badge&utm_content=badge) [![DepShield Badge](https://depshield.sonatype.org/badges/sonatype-nexus-community/nexus-repository-puppet/depshield.svg)](https://depshield.github.io)
 
 ## Developing
