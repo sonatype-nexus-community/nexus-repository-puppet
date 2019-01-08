@@ -2,4 +2,31 @@ language: java
 
 cache:
   directories:
-  - $HOME/.m2
+  - "$HOME/.m2"
+
+before_deploy:
+- mvn help:evaluate -N -Dexpression=project.version|grep -v '\['
+- export project_version=$(mvn help:evaluate -N -Dexpression=project.version|grep
+  -v '\[')
+
+before_install:
+    - echo $GPG_SECRET_KEYS | base64 --decode | $GPG_EXECUTABLE --import
+    - echo $GPG_OWNERTRUST | base64 --decode | $GPG_EXECUTABLE --import-ownertrust
+
+install:
+    mvn --settings .maven.xml install -B -V
+
+script:
+    mvn clean deploy --settings .maven.xml -PbuildKar -B -U -Prelease
+
+deploy:
+  provider: releases
+  api_key:
+    secure: IeT3yXlOyQklFs9BjkGkpoGS9g/iPSmKqNc8sNzanTgK4owgUiYHZGmBOUSxsusYo59HidDiEWeNGuNqcZ7Qxzr3LaoZ6BjF8uV9iuoh2HPtLZBQci4vRHu8pC4dmkGC92fbcm8XKMZZmGOuB7X58bO16u2CXLXRw7Ii7km57YqI01nYw7Rasti1DIQcozQ73jB2M9oMUd0CSixIZ5FGe59VLcywdC5kFTMJhUjjbIsuUBl86OXGrP9TupYqF1JuYyqVOU/V4qVnyZrX0Ia071NE1B6R1l+PvjySRgeN7JfOR9GCghRVq+tkwuYlVTCxKGX0IKow2eSPtAGr5+BNxU/xOJiq9HeMC2E2dna0yJ6IlI+pp9nP4Tb74XWx5H4p8Kpg8bGB/61ZZqhZl/OOUUy7qx3uO9KMUdceZy10tUzMl5jcIbs1aVSExmmxQpXHJomvXhkD3Ok6mbKhHU2JJtPo76chLLKxF5axbKYgf29RRy3XfHBCeS9/Mu/Y8SNblbvcOYbmYY7GZER3e5aWB5BFv8DNtrD1w+ZtRCF0PAY3ryxsRNtL9PcDvdL5Eu8/RAC8pYd8HA/adK43jH0XqxMKpn4rqJ3pevy8d6yvPAcT3NZtwQS/nIKDYNpaQ0zdiP2RQNf2JL6hUZuaCuqWi4l4/SLgi4CTEorFJY8Do/s=
+  file: repository-nexus-puppet/target/nexus-repository-puppet-$project_version.jar
+  on:
+    repo: sonatype-nexus-community/nexus-repository-puppet
+    all_branches: true
+    condition: $TRAVIS_BRANCH = master
+  skip_cleanup: true
+  name: $project_version
