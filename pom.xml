@@ -106,9 +106,6 @@
   <profiles>
     <profile>
       <id>release</id>
-      <properties>
-        <gpg.passphrase>${env.GPG_PASSPHRASE}</gpg.passphrase>
-      </properties>
       <build>
         <plugins>
 
