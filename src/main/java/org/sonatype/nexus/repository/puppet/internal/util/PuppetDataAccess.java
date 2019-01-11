@@ -103,6 +103,7 @@ public class PuppetDataAccess
     return QueryBuilders.boolQuery()
         .must(QueryBuilders.simpleQueryStringQuery(module)
             .field("name")
+            .field("uri")
             .defaultOperator(SimpleQueryStringBuilder.Operator.AND))
         .filter(QueryBuilders.termQuery(REPOSITORY_NAME, repository.getName()));
   }

@@ -14,11 +14,17 @@ package org.sonatype.nexus.repository.puppet.internal.hosted;
 
 import java.io.IOException;
 import java.io.InputStream;
+import java.lang.reflect.Array;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 
 import javax.annotation.Nullable;
 import javax.inject.Inject;
 import javax.inject.Named;
 
+import org.sonatype.nexus.common.entity.EntityId;
 import org.sonatype.nexus.repository.FacetSupport;
 import org.sonatype.nexus.repository.config.Configuration;
 import org.sonatype.nexus.repository.puppet.internal.AssetKind;
@@ -34,6 +40,8 @@ import org.sonatype.nexus.repository.search.SearchService;
 import org.sonatype.nexus.repository.storage.Asset;
 import org.sonatype.nexus.repository.storage.Bucket;
 import org.sonatype.nexus.repository.storage.Component;
+import org.sonatype.nexus.repository.storage.ComponentEntityAdapter;
+import org.sonatype.nexus.repository.storage.MetadataNodeEntityAdapter;
 import org.sonatype.nexus.repository.storage.StorageFacet;
 import org.sonatype.nexus.repository.storage.StorageTx;
 import org.sonatype.nexus.repository.storage.TempBlob;
@@ -51,6 +59,12 @@ import org.sonatype.nexus.transaction.UnitOfWork;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.common.base.Supplier;
+import org.elasticsearch.action.search.SearchResponse;
+import org.elasticsearch.index.query.QueryBuilder;
+import org.elasticsearch.search.SearchHit;
+import org.elasticsearch.search.sort.SortBuilder;
+import org.elasticsearch.search.sort.SortBuilders;
+import org.elasticsearch.search.sort.SortOrder;
 
 import static com.google.common.base.Preconditions.checkNotNull;
 import static org.sonatype.nexus.repository.puppet.internal.AssetKind.MODULE_DOWNLOAD;
@@ -77,6 +91,8 @@ public class PuppetHostedFacetImpl
 
   private final SearchService searchService;
 
+  private final List<SortBuilder> sorting;
+
   @Override
   protected void doInit(final Configuration configuration) throws Exception {
     super.doInit(configuration);
@@ -98,6 +114,9 @@ public class PuppetHostedFacetImpl
     this.moduleReleasesBuilder = checkNotNull(moduleReleasesBuilder);
     this.objectMapper = checkNotNull(objectMapper);
     this.searchService = checkNotNull(searchService);
+    this.sorting = new ArrayList<>();
+    this.sorting.add(SortBuilders.fieldSort(MetadataNodeEntityAdapter.P_NAME).order(SortOrder.ASC));
+    this.sorting.add(SortBuilders.fieldSort(ComponentEntityAdapter.P_VERSION).order(SortOrder.ASC));
   }
 
   @Nullable
@@ -134,19 +153,36 @@ public class PuppetHostedFacetImpl
   @Override
   @TransactionalTouchMetadata
   public Content searchByName(final Parameters parameters, final Context context) {
-    String module = parameters.get("module");
-
     StorageTx tx = UnitOfWork.currentTx();
 
+    ModuleReleases releases = getModuleReleasesFromSearchResponse(parameters, context, tx);
+
+    ObjectMapper objectMapper = new ObjectMapper();
+
+    try {
+      String results = objectMapper.writeValueAsString(releases);
+
+      return new Content(new BytesPayload(results.getBytes(), ContentTypes.APPLICATION_JSON));
+    }
+    catch (JsonProcessingException e) {
+      e.printStackTrace();
+    }
+    return null;
+  }
+
+  private ModuleReleases getModuleReleasesFromSearchResponse(final Parameters parameters,
+                                                             final Context context,
+                                                             final StorageTx tx)
+  {
     long totalResults, resultsPerPage, resultsOffset;
 
-    // Compute pagination information
-    totalResults = searchService.countUnrestricted(
-        puppetDataAccess.buildNameQuery(
-            context.getRepository(),
-            parameters.get("module")
-        )
+    QueryBuilder queryBuilder = puppetDataAccess.buildNameQuery(
+        context.getRepository(),
+        parameters.get("module")
     );
+
+    // Compute pagination information
+    totalResults = searchService.countUnrestricted(queryBuilder);
 
     try {
       resultsPerPage = Long.parseLong(parameters.get("limit"));
@@ -164,25 +200,27 @@ public class PuppetHostedFacetImpl
 
     ModuleReleases releases = moduleReleasesBuilder.parse(totalResults, resultsPerPage, resultsOffset, context);
 
-    // TODO: retrieve results pertaining to the offset and limit as set above
+    SearchResponse searchResponse = searchService.searchUnrestricted(queryBuilder, sorting, (int)resultsOffset, (int)resultsPerPage);
 
-    for (Asset asset : puppetDataAccess.findAssets(tx, getRepository(), module)) {
-      ModuleReleasesResult result = builder.parse(asset);
+    for (SearchHit hit : searchResponse.getHits()) {
+
+      //searchResults.results = searchResponse.hits.hits?.collect { hit ->
+      //    new V1SearchResult(
+      //        name: "${host}/${hit.source[MetadataNodeEntityAdapter.P_NAME]}:${hit.source[ComponentEntityAdapter.P_VERSION]}"
+      //  )
+      //}
+
+      // String path = hit.field("name").toString();
+      Map<String, Object> attributes = hit.sourceAsMap();
+      String name = attributes.get("name").toString();
+      String version = attributes.get("version").toString();
+      String path = String.format("/v3/files/%s-%s.tar.gz", name, version);
+      ModuleReleasesResult result = builder.parse(puppetDataAccess.findAsset(tx, tx.findBucket(getRepository()), path));
       releases.addResult(result);
     }
-
-    ObjectMapper objectMapper = new ObjectMapper();
-
-    try {
-      String results = objectMapper.writeValueAsString(releases);
-
-      return new Content(new BytesPayload(results.getBytes(), ContentTypes.APPLICATION_JSON));
-    }
-    catch (JsonProcessingException e) {
-      e.printStackTrace();
-    }
-    return null;
+    return releases;
   }
+
 
   @Override
   @TransactionalTouchMetadata

@@ -46,7 +46,7 @@ public class ModuleReleasesBuilder
     modulePagination.setOffset(offset);
 
     Parameters newParameters = new Parameters();
-    for (Entry<String, String> param: parameters) {
+    for (Entry<String, String> param : parameters) {
       newParameters.set(param.getKey(), param.getValue());
     }
 
@@ -65,7 +65,7 @@ public class ModuleReleasesBuilder
     }
 
     if (offset + limit < total) {
-      newParameters.replace("total", Long.toString(offset + limit));
+      newParameters.replace("offset", Long.toString(offset + limit));
       modulePagination.setNext(puppetPathUtils.buildModuleReleaseByNamePath(newParameters));
     }
     else {

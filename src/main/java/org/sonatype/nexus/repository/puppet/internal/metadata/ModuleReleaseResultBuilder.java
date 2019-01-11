@@ -55,14 +55,37 @@ public class ModuleReleaseResultBuilder
   private ModuleMetadata parseMetadata(final Asset asset) {
     ModuleMetadata metadata = new ModuleMetadata();
 
-    metadata.setAuthor(asset.formatAttributes().get("author").toString());
-    metadata.setLicense(asset.formatAttributes().get("license").toString());
-    metadata.setIssues_url(asset.formatAttributes().get("issues_url").toString());
-    metadata.setProject_page(asset.formatAttributes().get("project_page").toString());
-    metadata.setName(asset.formatAttributes().get("name").toString());
-    metadata.setVersion(asset.formatAttributes().get("version").toString());
-    metadata.setSource(asset.formatAttributes().get("source").toString());
-    metadata.setSummary(asset.formatAttributes().get("summary").toString());
+    if (asset.formatAttributes().get("author") != null) {
+      metadata.setAuthor(asset.formatAttributes().get("author").toString());
+    }
+
+    if (asset.formatAttributes().get("license") != null) {
+      metadata.setLicense(asset.formatAttributes().get("license").toString());
+    }
+
+    if (asset.formatAttributes().get("issues_url") != null) {
+      metadata.setIssues_url(asset.formatAttributes().get("issues_url").toString());
+    }
+
+    if (asset.formatAttributes().get("project_page") != null) {
+      metadata.setProject_page(asset.formatAttributes().get("project_page").toString());
+    }
+
+    if (asset.formatAttributes().get("name") != null) {
+      metadata.setName(asset.formatAttributes().get("name").toString());
+    }
+
+    if (asset.formatAttributes().get("version") != null) {
+      metadata.setVersion(asset.formatAttributes().get("version").toString());
+    }
+
+    if (asset.formatAttributes().get("source") != null) {
+      metadata.setSource(asset.formatAttributes().get("source").toString());
+    }
+
+    if (asset.formatAttributes().get("summary") != null) {
+      metadata.setSummary(asset.formatAttributes().get("summary").toString());
+    }
 
     return metadata;
   }
