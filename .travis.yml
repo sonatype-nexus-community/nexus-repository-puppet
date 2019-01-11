@@ -1,3 +1,6 @@
+# Prevents duplicate builds from occurring after Travis updates the tag in GitHub
+if: tag IS blank
+
 language: java
 
 cache:
