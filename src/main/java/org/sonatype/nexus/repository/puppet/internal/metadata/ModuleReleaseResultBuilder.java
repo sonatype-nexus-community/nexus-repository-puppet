@@ -12,6 +12,9 @@
  */
 package org.sonatype.nexus.repository.puppet.internal.metadata;
 
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.List;
 import java.util.Map;
 
 import javax.inject.Named;
@@ -19,6 +22,8 @@ import javax.inject.Singleton;
 
 import org.sonatype.nexus.common.collect.NestedAttributesMap;
 import org.sonatype.nexus.repository.storage.Asset;
+
+import static com.google.common.base.Preconditions.checkState;
 
 @Named
 @Singleton
@@ -55,36 +60,55 @@ public class ModuleReleaseResultBuilder
   private ModuleMetadata parseMetadata(final Asset asset) {
     ModuleMetadata metadata = new ModuleMetadata();
 
-    if (asset.formatAttributes().get("author") != null) {
-      metadata.setAuthor(asset.formatAttributes().get("author").toString());
+    NestedAttributesMap attributes = asset.formatAttributes();
+    if (attributes.get("author") != null) {
+      metadata.setAuthor(attributes.get("author").toString());
     }
 
-    if (asset.formatAttributes().get("license") != null) {
-      metadata.setLicense(asset.formatAttributes().get("license").toString());
+    if (attributes.get("license") != null) {
+      metadata.setLicense(attributes.get("license").toString());
     }
 
-    if (asset.formatAttributes().get("issues_url") != null) {
-      metadata.setIssues_url(asset.formatAttributes().get("issues_url").toString());
+    if (attributes.get("issues_url") != null) {
+      metadata.setIssues_url(attributes.get("issues_url").toString());
     }
 
-    if (asset.formatAttributes().get("project_page") != null) {
-      metadata.setProject_page(asset.formatAttributes().get("project_page").toString());
+    if (attributes.get("project_page") != null) {
+      metadata.setProject_page(attributes.get("project_page").toString());
     }
 
-    if (asset.formatAttributes().get("name") != null) {
-      metadata.setName(asset.formatAttributes().get("name").toString());
+    if (attributes.get("name") != null) {
+      metadata.setName(attributes.get("name").toString());
     }
 
-    if (asset.formatAttributes().get("version") != null) {
-      metadata.setVersion(asset.formatAttributes().get("version").toString());
+    if (attributes.get("version") != null) {
+      metadata.setVersion(attributes.get("version").toString());
     }
 
-    if (asset.formatAttributes().get("source") != null) {
-      metadata.setSource(asset.formatAttributes().get("source").toString());
+    if (attributes.get("source") != null) {
+      metadata.setSource(attributes.get("source").toString());
     }
 
-    if (asset.formatAttributes().get("summary") != null) {
-      metadata.setSummary(asset.formatAttributes().get("summary").toString());
+    if (attributes.get("summary") != null) {
+      metadata.setSummary(attributes.get("summary").toString());
+    }
+
+    if (attributes.get("dependencies") != null) {
+      Object dependenciesObj = attributes.get("dependencies");
+      checkState(dependenciesObj instanceof Map, "dependencies must be a 'child'");
+      Map dependencies = (Map) dependenciesObj;
+
+      List<ModuleDependency> moduleDependencies = new ArrayList<>(dependencies.keySet().size());
+      for (Object dependencyName : dependencies.keySet()) {
+        if (dependencies.get(dependencyName) != null) {
+          moduleDependencies.add(new ModuleDependency(dependencyName.toString(),
+              dependencies.get(dependencyName).toString()));
+        }
+      }
+      metadata.setDependencies(moduleDependencies);
+    }
+    else {
+      metadata.setDependencies(Collections.emptyList());
     }
 
     return metadata;
