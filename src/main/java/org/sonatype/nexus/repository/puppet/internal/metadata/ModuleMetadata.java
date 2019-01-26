@@ -12,6 +12,8 @@
  */
 package org.sonatype.nexus.repository.puppet.internal.metadata;
 
+import java.util.List;
+
 public class ModuleMetadata
 {
   private String name;
@@ -29,6 +31,8 @@ public class ModuleMetadata
   private String project_page;
 
   private String issues_url;
+
+  private List<ModuleDependency> dependencies;
 
   public String getName() {
     return name;
@@ -92,5 +96,13 @@ public class ModuleMetadata
 
   public void setIssues_url(final String issues_url) {
     this.issues_url = issues_url;
+  }
+
+  public List<ModuleDependency> getDependencies() {
+    return dependencies;
+  }
+
+  public void setDependencies(List<ModuleDependency> dependencies) {
+    this.dependencies = dependencies;
   }
 }
