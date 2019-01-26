@@ -15,7 +15,7 @@
 /**
  * Repository "Settings" form for a Puppet Proxy repository
  */
-Ext.define('NX.helm.view.repository.recipe.PuppetProxy', {
+Ext.define('NX.coreui.view.repository.recipe.PuppetProxy', {
     extend: 'NX.coreui.view.repository.RepositorySettingsForm',
     alias: 'widget.nx-coreui-repository-puppet-proxy',
     requires: [
