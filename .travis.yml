@@ -2,25 +2,37 @@
 if: tag IS blank
 
 language: java
+sudo: false
+jdk: openjdk8
 
 cache:
   directories:
-  - "$HOME/.m2"
+    - "$HOME/.m2"
 
 before_deploy:
-- mvn help:evaluate -N -Dexpression=project.version|grep -v '\['
-- export project_version=$(mvn help:evaluate -N -Dexpression=project.version | grep -v '\[')
-- export TRAVIS_TAG=$project_version
+  - ./mvnw help:evaluate -Dexpression=project.version -q -DforceStdout
+  - export project_version=$(./mvnw help:evaluate -Dexpression=project.version -q -DforceStdout)
+  - export TRAVIS_TAG=$project_version
 
 before_install:
-    - echo $GPG_SECRET_KEYS | base64 --decode | $GPG_EXECUTABLE --import
-    - echo $GPG_OWNERTRUST | base64 --decode | $GPG_EXECUTABLE --import-ownertrust
+  - |
+    GPG_EXECUTABLE=${GPG_EXECUTABLE:-gpg}
+    if [[ -n $GPG_SECRET_KEYS ]]; then
+      echo $GPG_SECRET_KEYS | base64 --decode | $GPG_EXECUTABLE --import
+    fi
+    if [[ -n $GPG_OWNERTRUST ]]; then
+      echo $GPG_OWNERTRUST | base64 --decode | $GPG_EXECUTABLE --import-ownertrust
+    fi
 
 install:
-    mvn --settings .maven.xml install -B -V
+  ./mvnw -V dependency:go-offline -B
 
-script:
-    mvn clean deploy --settings .maven.xml -PbuildKar -B -U -Prelease
+script: |
+  target='verify -Dgpg.skip=true'
+  if [[ -n $SONATYPE_PASSWORD ]]; then
+    target=deploy
+  fi
+  ./mvnw -V --settings .maven.xml clean $target -B -U -PbuildKar -Prelease
 
 deploy:
   provider: releases
