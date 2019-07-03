@@ -12,23 +12,15 @@
  */
 package org.sonatype.nexus.repository.puppet.internal.metadata;
 
-import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
-
-/**
- * @since 0.0.1
- */
-@JsonIgnoreProperties(ignoreUnknown = true)
-public final class PuppetAttributes
+public class ModuleMetadata
 {
   private String name;
 
   private String version;
 
-  private String summary;
-
-  private String description;
-
   private String author;
+
+  private String summary;
 
   private String license;
 
@@ -38,12 +30,36 @@ public final class PuppetAttributes
 
   private String issues_url;
 
+  public String getName() {
+    return name;
+  }
+
+  public void setName(final String name) {
+    this.name = name;
+  }
+
+  public String getVersion() {
+    return version;
+  }
+
+  public void setVersion(final String version) {
+    this.version = version;
+  }
+
   public String getAuthor() {
     return author;
   }
 
   public void setAuthor(final String author) {
     this.author = author;
+  }
+
+  public String getSummary() {
+    return summary;
+  }
+
+  public void setSummary(final String summary) {
+    this.summary = summary;
   }
 
   public String getLicense() {
@@ -76,37 +92,5 @@ public final class PuppetAttributes
 
   public void setIssues_url(final String issues_url) {
     this.issues_url = issues_url;
-  }
-
-  public String getSummary() {
-    return summary;
-  }
-
-  public void setSummary(final String summary) {
-    this.summary = summary;
-  }
-
-  public String getName() {
-    return name;
-  }
-
-  public void setName(final String name) {
-    this.name = name;
-  }
-
-  public String getVersion() {
-    return version;
-  }
-
-  public void setVersion(final String version) {
-    this.version = version;
-  }
-
-  public String getDescription() {
-    return description;
-  }
-
-  public void setDescription(final String description) {
-    this.description = description;
   }
 }
