@@ -33,7 +33,7 @@ Also, there is a good amount of information available at [Bundle Development](ht
 
 To build the project and generate the bundle use Maven
 
-    mvn clean package
+    ./mvnw clean package
 
 If everything checks out, the bundle for puppet should be available in the `target` folder
 
