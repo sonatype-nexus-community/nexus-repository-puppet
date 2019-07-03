@@ -21,4 +21,6 @@ Sonatype internal people, in alphabetical order by username:
 
 External contributors:
 
+* [@camaral](https://github.com/camaral/) (Caio Brandao do Amaral)
+
 ![Possibly You!](http://i.imgur.com/A3eScYul.jpg)

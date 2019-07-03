@@ -21,8 +21,11 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import org.junit.Before;
 import org.junit.Test;
 
+import static org.hamcrest.CoreMatchers.equalTo;
 import static org.hamcrest.CoreMatchers.is;
 import static org.hamcrest.CoreMatchers.notNullValue;
+import static org.hamcrest.Matchers.contains;
+import static org.hamcrest.Matchers.hasProperty;
 import static org.hamcrest.MatcherAssert.assertThat;
 
 public class PuppetAttributeParserTest
@@ -43,12 +46,19 @@ public class PuppetAttributeParserTest
 
   @Test
   public void getAttributesFromPuppetModule() throws Exception {
-    InputStream module = getClass().getResourceAsStream("puppetlabs-stdlib-5.1.0.tar.gz");
+    InputStream module = getClass().getResourceAsStream("puppetlabs-ntp-7.3.0.tar.gz");
     PuppetAttributes result = underTest.getAttributesFromInputStream(module);
 
-    assertThat(result.getName(), is(notNullValue()));
-    assertThat(result.getVersion(), is(notNullValue()));
-    assertThat(result.getDescription(), is(notNullValue()));
+    assertThat(result.getName(), is("puppetlabs-ntp"));
+    assertThat(result.getVersion(), is("7.3.0"));
     assertThat(result.getSummary(), is(notNullValue()));
+    assertThat(result.getDescription(), is(notNullValue()));
+    assertThat(result.getAuthor(), is(notNullValue()));
+    assertThat(result.getLicense(), is(notNullValue()));
+    assertThat(result.getSource(), is(notNullValue()));
+    assertThat(result.getProject_page(), is(notNullValue()));
+    assertThat(result.getIssues_url(), is(notNullValue()));
+    assertThat(result.getDependencies(), is(notNullValue()));
+    assertThat(result.getDependencies(), contains(hasProperty("name", equalTo("puppetlabs/stdlib"))));
   }
 }

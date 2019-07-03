@@ -18,6 +18,7 @@ import javax.inject.Singleton;
 import org.sonatype.goodies.common.ComponentSupport;
 import org.sonatype.nexus.common.collect.NestedAttributesMap;
 import org.sonatype.nexus.repository.puppet.internal.metadata.PuppetAttributes;
+import org.sonatype.nexus.repository.puppet.internal.metadata.PuppetDependencyAttributes;
 
 @Named
 @Singleton
@@ -34,5 +35,13 @@ public class PuppetAssetAttributePopulator
     attributes.set("source", puppetAttributes.getSource());
     attributes.set("project_page", puppetAttributes.getProject_page());
     attributes.set("issues_url", puppetAttributes.getIssues_url());
+
+    if (puppetAttributes.getDependencies() != null) {
+      NestedAttributesMap dependencies = attributes.child("dependencies");
+      for (PuppetDependencyAttributes puppetDependency : puppetAttributes.getDependencies()) {
+        dependencies.set(puppetDependency.getName(), puppetDependency.getVersion_requirement());
+      }
+    }
+
   }
 }

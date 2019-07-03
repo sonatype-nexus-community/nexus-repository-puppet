@@ -14,6 +14,8 @@ package org.sonatype.nexus.repository.puppet.internal.metadata;
 
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 
+import java.util.List;
+
 /**
  * @since 0.0.1
  */
@@ -37,6 +39,8 @@ public final class PuppetAttributes
   private String project_page;
 
   private String issues_url;
+
+  private List<PuppetDependencyAttributes> dependencies;
 
   public String getAuthor() {
     return author;
@@ -108,5 +112,13 @@ public final class PuppetAttributes
 
   public void setDescription(final String description) {
     this.description = description;
+  }
+
+  public List<PuppetDependencyAttributes> getDependencies() {
+    return dependencies;
+  }
+
+  public void setDependencies(List<PuppetDependencyAttributes> dependencies) {
+    this.dependencies = dependencies;
   }
 }
