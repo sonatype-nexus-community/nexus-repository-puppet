@@ -24,7 +24,7 @@
 
   <artifactId>nexus-repository-puppet</artifactId>
   <name>${project.groupId}:${project.artifactId}</name>
-  <version>0.0.2</version>
+  <version>0.0.3-SNAPSHOT</version>
   <inceptionYear>2018</inceptionYear>
   <packaging>bundle</packaging>
 
