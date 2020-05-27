@@ -97,6 +97,17 @@ All released versions can be found [here](https://github.com/sonatype-nexus-comm
 There are a range of options for installing the puppet plugin. You'll need to build it first, and
 then install the plugin with the options shown below:
 
+### Easiest Install
+
+Thanks to some upstream work in Nexus Repository, it's become a LOT easier to install a plugin. To install the `puppet` plugin, follow these steps:
+
+* Build the plugin with `mvn clean package -PbuildKar`
+* Copy the `nexus-repository-puppet-0.1.x-bundle.kar` file from your `target` folder to the `deploy` folder for your Nexus Repository installation.
+
+Once you've done this, go ahead and either restart Nexus Repo, or go ahead and start it if it wasn't running to begin with.
+
+You should see `puppet (proxy)` in the available Repository Recipes to use, if all has gone according to plan :)
+
 ### Temporary Install
 
 Installations done via the Karaf console will be wiped out with every restart of Nexus Repository. This is a
