@@ -19,12 +19,12 @@
   <parent>
     <groupId>org.sonatype.nexus.plugins</groupId>
     <artifactId>nexus-plugins</artifactId>
-    <version>3.14.0-04</version>
+    <version>3.17.0-01</version>
   </parent>
 
   <artifactId>nexus-repository-puppet</artifactId>
   <name>${project.groupId}:${project.artifactId}</name>
-  <version>0.0.3</version>
+  <version>0.1.0</version>
   <inceptionYear>2018</inceptionYear>
   <packaging>bundle</packaging>
 

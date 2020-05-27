@@ -12,25 +12,17 @@
  */
 package org.sonatype.nexus.repository.puppet.internal.metadata;
 
-import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
-
 import java.util.List;
 
-/**
- * @since 0.0.1
- */
-@JsonIgnoreProperties(ignoreUnknown = true)
-public final class PuppetAttributes
+public class ModuleMetadata
 {
   private String name;
 
   private String version;
 
-  private String summary;
-
-  private String description;
-
   private String author;
+
+  private String summary;
 
   private String license;
 
@@ -40,7 +32,23 @@ public final class PuppetAttributes
 
   private String issues_url;
 
-  private List<PuppetDependencyAttributes> dependencies;
+  private List<ModuleDependency> dependencies;
+
+  public String getName() {
+    return name;
+  }
+
+  public void setName(final String name) {
+    this.name = name;
+  }
+
+  public String getVersion() {
+    return version;
+  }
+
+  public void setVersion(final String version) {
+    this.version = version;
+  }
 
   public String getAuthor() {
     return author;
@@ -48,6 +56,14 @@ public final class PuppetAttributes
 
   public void setAuthor(final String author) {
     this.author = author;
+  }
+
+  public String getSummary() {
+    return summary;
+  }
+
+  public void setSummary(final String summary) {
+    this.summary = summary;
   }
 
   public String getLicense() {
@@ -82,43 +98,11 @@ public final class PuppetAttributes
     this.issues_url = issues_url;
   }
 
-  public String getSummary() {
-    return summary;
-  }
-
-  public void setSummary(final String summary) {
-    this.summary = summary;
-  }
-
-  public String getName() {
-    return name;
-  }
-
-  public void setName(final String name) {
-    this.name = name;
-  }
-
-  public String getVersion() {
-    return version;
-  }
-
-  public void setVersion(final String version) {
-    this.version = version;
-  }
-
-  public String getDescription() {
-    return description;
-  }
-
-  public void setDescription(final String description) {
-    this.description = description;
-  }
-
-  public List<PuppetDependencyAttributes> getDependencies() {
+  public List<ModuleDependency> getDependencies() {
     return dependencies;
   }
 
-  public void setDependencies(List<PuppetDependencyAttributes> dependencies) {
+  public void setDependencies(List<ModuleDependency> dependencies) {
     this.dependencies = dependencies;
   }
 }

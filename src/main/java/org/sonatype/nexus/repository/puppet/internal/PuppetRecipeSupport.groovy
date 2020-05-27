@@ -12,17 +12,13 @@
  */
 package org.sonatype.nexus.repository.puppet.internal
 
-import javax.inject.Inject
-import javax.inject.Provider
-
-import org.sonatype.nexus.repository.puppet.internal.security.PuppetSecurityFacet
-
 import org.sonatype.nexus.repository.Format
 import org.sonatype.nexus.repository.RecipeSupport
 import org.sonatype.nexus.repository.Type
 import org.sonatype.nexus.repository.attributes.AttributesFacet
 import org.sonatype.nexus.repository.http.PartialFetchHandler
 import org.sonatype.nexus.repository.httpclient.HttpClientFacet
+import org.sonatype.nexus.repository.puppet.internal.security.PuppetSecurityFacet
 import org.sonatype.nexus.repository.purge.PurgeUnusedFacet
 import org.sonatype.nexus.repository.search.SearchFacet
 import org.sonatype.nexus.repository.security.SecurityHandler
@@ -39,9 +35,11 @@ import org.sonatype.nexus.repository.view.handlers.ExceptionHandler
 import org.sonatype.nexus.repository.view.handlers.HandlerContributor
 import org.sonatype.nexus.repository.view.handlers.TimingHandler
 import org.sonatype.nexus.repository.view.matchers.ActionMatcher
-import org.sonatype.nexus.repository.view.matchers.LiteralMatcher
 import org.sonatype.nexus.repository.view.matchers.logic.LogicMatchers
 import org.sonatype.nexus.repository.view.matchers.token.TokenMatcher
+
+import javax.inject.Inject
+import javax.inject.Provider
 
 import static org.sonatype.nexus.repository.http.HttpMethods.GET
 import static org.sonatype.nexus.repository.http.HttpMethods.HEAD
@@ -49,9 +47,7 @@ import static org.sonatype.nexus.repository.http.HttpMethods.HEAD
 /**
  * Support for Puppet recipes.
  */
-abstract class PuppetRecipeSupport
-    extends RecipeSupport
-{
+abstract class PuppetRecipeSupport extends RecipeSupport {
   @Inject
   Provider<PuppetSecurityFacet> securityFacet
 
@@ -89,9 +85,6 @@ abstract class PuppetRecipeSupport
   UnitOfWorkHandler unitOfWorkHandler
 
   @Inject
-  BrowseUnsupportedHandler browseUnsupportedHandler
-
-  @Inject
   HandlerContributor handlerContributor
 
   @Inject
@@ -102,6 +95,18 @@ abstract class PuppetRecipeSupport
 
   @Inject
   Provider<PurgeUnusedFacet> purgeUnusedFacet
+
+  private BrowseUnsupportedHandler browseUnsupportedHandler
+
+  BrowseUnsupportedHandler getBrowseUnsupportedHandler() {
+    return browseUnsupportedHandler
+  }
+
+  @Inject
+  void setBrowseUnsupportedHandler(BrowseUnsupportedHandler browseUnsupportedHandler) {
+    this.browseUnsupportedHandler = browseUnsupportedHandler
+    super.setBrowseUnsupportedHandler(browseUnsupportedHandler)
+  }
 
   protected PuppetRecipeSupport(final Type type, final Format format) {
     super(type, format)
@@ -125,7 +130,7 @@ abstract class PuppetRecipeSupport
    * Matcher for a module release details.
    */
   static Matcher moduleReleaseByNameAndVersionMatcher() {
-    buildTokenMatcherForPatternAndAssetKind('/v3/releases/{user:.+}-{module:.+}-{version:.+}',  AssetKind.MODULE_RELEASE_BY_NAME_AND_VERSION, GET, HEAD)
+    buildTokenMatcherForPatternAndAssetKind('/v3/releases/{user:.+}-{module:.+}-{version:.+}', AssetKind.MODULE_RELEASE_BY_NAME_AND_VERSION, GET, HEAD)
   }
 
   /**
@@ -139,15 +144,15 @@ abstract class PuppetRecipeSupport
                                                          final AssetKind assetKind,
                                                          final String... actions) {
     LogicMatchers.and(
-        new ActionMatcher(actions),
-        new TokenMatcher(pattern),
-        new Matcher() {
-          @Override
-          boolean matches(final Context context) {
-            context.attributes.set(AssetKind.class, assetKind)
-            return true
-          }
+      new ActionMatcher(actions),
+      new TokenMatcher(pattern),
+      new Matcher() {
+        @Override
+        boolean matches(final Context context) {
+          context.attributes.set(AssetKind.class, assetKind)
+          return true
         }
+      }
     )
   }
 }

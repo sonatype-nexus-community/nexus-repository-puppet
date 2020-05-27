@@ -21,4 +21,7 @@ Sonatype internal people, in alphabetical order by username:
 
 External contributors:
 
+* [@camaral](https://github.com/camaral/) (Caio Brandao do Amaral)
+* [@cardil](https://github.com/cardil/) at [@wavesoftware](https://github.com/wavesoftware/) (Chris Suszynski) 
+
 ![Possibly You!](http://i.imgur.com/A3eScYul.jpg)

@@ -18,6 +18,7 @@ import java.util.List;
 
 import javax.annotation.Nullable;
 import javax.inject.Named;
+import javax.validation.constraints.Null;
 
 import org.sonatype.nexus.blobstore.api.Blob;
 import org.sonatype.nexus.common.collect.AttributesMap;
@@ -36,8 +37,12 @@ import org.sonatype.nexus.repository.view.payloads.BlobPayload;
 
 import com.google.common.base.Supplier;
 import com.google.common.collect.ImmutableList;
+import org.elasticsearch.index.query.QueryBuilder;
+import org.elasticsearch.index.query.QueryBuilders;
+import org.elasticsearch.index.query.SimpleQueryStringBuilder;
 
 import static java.util.Collections.singletonList;
+import static org.sonatype.nexus.repository.search.DefaultComponentMetadataProducer.REPOSITORY_NAME;
 import static org.sonatype.nexus.repository.storage.ComponentEntityAdapter.P_VERSION;
 import static org.sonatype.nexus.repository.storage.MetadataNodeEntityAdapter.P_NAME;
 
@@ -47,7 +52,7 @@ import static org.sonatype.nexus.repository.storage.MetadataNodeEntityAdapter.P_
 @Named
 public class PuppetDataAccess
 {
-  public static final List<HashAlgorithm> HASH_ALGORITHMS = ImmutableList.of(HashAlgorithm.SHA1);
+  public static final List<HashAlgorithm> HASH_ALGORITHMS = ImmutableList.of(HashAlgorithm.SHA1, HashAlgorithm.MD5);
 
   /**
    * Find a component by its name and tag (version)
@@ -74,6 +79,36 @@ public class PuppetDataAccess
   }
 
   /**
+   * Find all assets
+   *
+   * @return all assets for a component
+   */
+  @Nullable
+  public Iterable<Asset> findAssets(final StorageTx tx,
+                                    final Repository repository,
+                                    final String module)
+  {
+    Iterable<Asset> assets = tx.findAssets(
+      Query.builder()
+          .where("attributes.puppet.name").eq(module)
+          .build(),
+      singletonList(repository)
+    );
+    return assets;
+  }
+
+  public QueryBuilder buildNameQuery(final Repository repository,
+                                     final String module)
+  {
+    return QueryBuilders.boolQuery()
+        .must(QueryBuilders.simpleQueryStringQuery(module)
+            .field("name")
+            .field("uri")
+            .defaultOperator(SimpleQueryStringBuilder.Operator.AND))
+        .filter(QueryBuilders.termQuery(REPOSITORY_NAME, repository.getName()));
+  }
+
+  /**
    * Find an asset by its name.
    *
    * @return found asset or null if not found
@@ -81,6 +116,16 @@ public class PuppetDataAccess
   @Nullable
   public Asset findAsset(final StorageTx tx, final Bucket bucket, final String assetName) {
     return tx.findAssetWithProperty(MetadataNodeEntityAdapter.P_NAME, assetName, bucket);
+  }
+
+  /**
+   * Find an asset by it's component
+   *
+   * @return found asset or null if not found
+   */
+  @Nullable
+  public Asset findAssetByComponent(final StorageTx tx, final Bucket bucket, final Component component) {
+    return tx.findAssetWithProperty(MetadataNodeEntityAdapter.P_BUCKET, bucket, component);
   }
 
   /**
