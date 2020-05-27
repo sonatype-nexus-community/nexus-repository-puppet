@@ -67,7 +67,7 @@ The table below outlines what version of Nexus Repository the plugin was built a
 |----------------|--------------------------|
 | v0.0.1         | 3.14.0-04                |
 | v0.0.2         | 3.14.0-04                |
-| v0.1.0         | 3.17.0-01                |
+| v0.1.1         | 3.17.0-01                |
 
 If a new version of Nexus Repository is released and the plugin needs changes, a new release will be made, and this
 table will be updated to indicate which version of Nexus Repository it will function against. This is done on a time 
@@ -111,7 +111,7 @@ good installation path if you are just testing or doing development on the plugi
   # sudo su - nexus
   $ cd <nexus_dir>/bin
   $ ./nexus run
-  > bundle:install file:///tmp/nexus-repository-puppet-0.1.0.jar
+  > bundle:install file:///tmp/nexus-repository-puppet-0.1.x.jar
   > bundle:list
   ```
   (look for org.sonatype.nexus.plugins:nexus-repository-puppet ID, should be the last one)
@@ -123,7 +123,7 @@ good installation path if you are just testing or doing development on the plugi
 
 For more permanent installs of the nexus-repository-puppet plugin, follow these instructions:
 
-* Copy the bundle (nexus-repository-puppet-0.1.0.jar) into <nexus_dir>/deploy
+* Copy the bundle (nexus-repository-puppet-0.1.x.jar) into <nexus_dir>/deploy
 
 This will cause the plugin to be loaded with each restart of Nexus Repository. As well, this folder is monitored
 by Nexus Repository and the plugin should load within 60 seconds of being copied there if Nexus Repository
@@ -133,7 +133,7 @@ is running. You will still need to start the bundle using the karaf commands men
 
 If you are trying to use the puppet plugin permanently, it likely makes more sense to do the following:
 
-* Copy the bundle into `<nexus_dir>/system/org/sonatype/nexus/plugins/nexus-repository-puppet/0.1.0/nexus-repository-puppet-0.1.0.jar`
+* Copy the bundle into `<nexus_dir>/system/org/sonatype/nexus/plugins/nexus-repository-puppet/0.1.x/nexus-repository-puppet-0.1.x.jar`
 * Make the following additions marked with + to `<nexus_dir>/system/org/sonatype/nexus/assemblies/nexus-core-feature/3.x.y/nexus-core-feature-3.x.y-features.xml`
 
    ```
@@ -144,9 +144,9 @@ If you are trying to use the puppet plugin permanently, it likely makes more sen
 
    And
    ```
-   + <feature name="nexus-repository-puppet" description="org.sonatype.nexus.plugins:nexus-repository-puppet" version="0.1.0">
+   + <feature name="nexus-repository-puppet" description="org.sonatype.nexus.plugins:nexus-repository-puppet" version="0.1.x">
    +     <details>org.sonatype.nexus.plugins:nexus-repository-puppet</details>
-   +     <bundle>mvn:org.sonatype.nexus.plugins/nexus-repository-puppet/0.1.0</bundle>
+   +     <bundle>mvn:org.sonatype.nexus.plugins/nexus-repository-puppet/0.1.x</bundle>
    + </feature>
     </features>
    ```
