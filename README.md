@@ -24,7 +24,7 @@
 ### Requirements
 
 * [Apache Maven 3.3.3+](https://maven.apache.org/install.html)
-* [Java 8+](https://adoptopenjdk.net)
+* [Java 8](https://adoptopenjdk.net)
 * Network access to https://repository.sonatype.org/content/groups/sonatype-public-grid
 
 Also, there is a good amount of information available at [Bundle Development](https://help.sonatype.com/display/NXRM3/Bundle+Development)
