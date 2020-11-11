@@ -12,7 +12,7 @@ import java.util.Set;
  * @author <a href="mailto:krzysztof.suszynski@wavesoftware.pl">Krzysztof Suszynski</a>
  * @since 0.1.0
  */
-@Named
+//@Named
 public final class NodeAccessStub implements NodeAccess {
     @Override
     public Certificate getCertificate() {

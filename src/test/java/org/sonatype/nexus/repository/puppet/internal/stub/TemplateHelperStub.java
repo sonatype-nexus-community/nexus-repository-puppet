@@ -10,7 +10,7 @@ import java.net.URL;
  * @author <a href="mailto:krzysztof.suszynski@wavesoftware.pl">Krzysztof Suszynski</a>
  * @since 0.1.0
  */
-@Named
+//@Named
 public final class TemplateHelperStub implements TemplateHelper {
     @Override
     public TemplateParameters parameters() {
