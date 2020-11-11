@@ -15,10 +15,10 @@ package org.sonatype.nexus.repository.puppet.internal.util;
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.List;
+import java.util.function.Supplier;
 
 import javax.annotation.Nullable;
 import javax.inject.Named;
-import javax.validation.constraints.Null;
 
 import org.sonatype.nexus.blobstore.api.Blob;
 import org.sonatype.nexus.common.collect.AttributesMap;
@@ -35,7 +35,6 @@ import org.sonatype.nexus.repository.view.Content;
 import org.sonatype.nexus.repository.view.Payload;
 import org.sonatype.nexus.repository.view.payloads.BlobPayload;
 
-import com.google.common.base.Supplier;
 import com.google.common.collect.ImmutableList;
 import org.elasticsearch.index.query.QueryBuilder;
 import org.elasticsearch.index.query.QueryBuilders;

@@ -20,7 +20,7 @@ import org.sonatype.nexus.orient.DatabaseInstanceNames;
 import org.sonatype.nexus.orient.testsupport.internal.MemoryDatabaseManager;
 import org.sonatype.nexus.repository.Repository;
 import org.sonatype.nexus.repository.config.Configuration;
-import org.sonatype.nexus.repository.config.internal.ConfigurationStore;
+import org.sonatype.nexus.repository.config.ConfigurationStore;
 import org.sonatype.nexus.repository.group.GroupHandler.DispatchedRepositories;
 import org.sonatype.nexus.repository.internal.blobstore.BlobStoreConfigurationStore;
 import org.sonatype.nexus.repository.manager.RepositoryManager;
@@ -47,8 +47,8 @@ import static com.google.inject.name.Names.named;
 import static org.fest.assertions.api.Assertions.assertThat;
 import static org.mockito.Matchers.any;
 import static org.mockito.Mockito.when;
+import static org.sonatype.nexus.repository.config.WritePolicy.ALLOW_ONCE;
 import static org.sonatype.nexus.repository.puppet.internal.group.PuppetMergingHandler.readReleases;
-import static org.sonatype.nexus.repository.storage.WritePolicy.ALLOW_ONCE;
 
 /**
  * @author <a href="mailto:krzysztof.suszynski@wavesoftware.pl">Krzysztof Suszynski</a>
