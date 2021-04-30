@@ -1,20 +1,21 @@
 package org.sonatype.nexus.repository.puppet.internal.stub;
 
-import org.apache.http.impl.client.CloseableHttpClient;
-import org.apache.http.impl.client.HttpClientBuilder;
-import org.apache.http.impl.client.HttpClients;
+import javax.annotation.Nullable;
+import javax.inject.Named;
+
 import org.sonatype.nexus.httpclient.HttpClientManager;
 import org.sonatype.nexus.httpclient.HttpClientPlan;
 import org.sonatype.nexus.httpclient.config.HttpClientConfiguration;
 
-import javax.annotation.Nullable;
-import javax.inject.Named;
+import org.apache.http.impl.client.CloseableHttpClient;
+import org.apache.http.impl.client.HttpClientBuilder;
+import org.apache.http.impl.client.HttpClients;
 
 /**
  * @author <a href="mailto:krzysztof.suszynski@wavesoftware.pl">Krzysztof Suszynski</a>
  * @since 0.1.0
  */
-@Named
+//@Named
 public final class HttpClientManagerStub implements HttpClientManager {
   @Override
   public HttpClientConfiguration getConfiguration() {
@@ -38,6 +39,11 @@ public final class HttpClientManagerStub implements HttpClientManager {
 
   @Override
   public HttpClientBuilder prepare(@Nullable HttpClientPlan.Customizer customizer) {
+    throw new UnsupportedOperationException("Not yet implemented");
+  }
+
+  @Override
+  public HttpClientConfiguration newConfiguration() {
     throw new UnsupportedOperationException("Not yet implemented");
   }
 }

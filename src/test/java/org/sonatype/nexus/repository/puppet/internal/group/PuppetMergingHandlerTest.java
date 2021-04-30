@@ -1,17 +1,13 @@
 package org.sonatype.nexus.repository.puppet.internal.group;
 
-import com.google.common.collect.ImmutableList;
-import com.google.common.collect.ImmutableMap;
-import com.google.inject.Binder;
-import org.apache.shiro.authz.Permission;
-import org.apache.shiro.mgt.SecurityManager;
-import org.apache.shiro.subject.Subject;
-import org.apache.shiro.util.ThreadContext;
-import org.eclipse.sisu.launch.InjectedTest;
-import org.junit.Test;
-import org.junit.runner.RunWith;
-import org.mockito.Mock;
-import org.mockito.runners.MockitoJUnitRunner;
+import java.util.HashMap;
+import java.util.Map;
+
+import javax.inject.Inject;
+import javax.inject.Provider;
+import javax.validation.Validation;
+import javax.validation.Validator;
+
 import org.sonatype.nexus.blobstore.api.BlobStore;
 import org.sonatype.nexus.blobstore.api.BlobStoreConfiguration;
 import org.sonatype.nexus.blobstore.api.BlobStoreManager;
@@ -20,9 +16,11 @@ import org.sonatype.nexus.orient.DatabaseInstanceNames;
 import org.sonatype.nexus.orient.testsupport.internal.MemoryDatabaseManager;
 import org.sonatype.nexus.repository.Repository;
 import org.sonatype.nexus.repository.config.Configuration;
-import org.sonatype.nexus.repository.config.internal.ConfigurationStore;
+import org.sonatype.nexus.repository.config.ConfigurationStore;
+import org.sonatype.nexus.repository.config.internal.orient.OrientConfiguration;
 import org.sonatype.nexus.repository.group.GroupHandler.DispatchedRepositories;
 import org.sonatype.nexus.repository.internal.blobstore.BlobStoreConfigurationStore;
+import org.sonatype.nexus.repository.internal.blobstore.orient.OrientBlobStoreConfiguration;
 import org.sonatype.nexus.repository.manager.RepositoryManager;
 import org.sonatype.nexus.repository.puppet.internal.hosted.PuppetHostedRecipe;
 import org.sonatype.nexus.repository.puppet.internal.metadata.ModuleReleases;
@@ -36,19 +34,25 @@ import org.sonatype.nexus.repository.view.Response;
 import org.sonatype.nexus.transaction.TransactionModule;
 import org.sonatype.nexus.transaction.UnitOfWork;
 
-import javax.inject.Inject;
-import javax.inject.Provider;
-import javax.validation.Validation;
-import javax.validation.Validator;
-import java.util.HashMap;
-import java.util.Map;
+import com.google.common.collect.ImmutableList;
+import com.google.common.collect.ImmutableMap;
+import com.google.inject.Binder;
+import org.apache.shiro.authz.Permission;
+import org.apache.shiro.mgt.SecurityManager;
+import org.apache.shiro.subject.Subject;
+import org.apache.shiro.util.ThreadContext;
+import org.eclipse.sisu.launch.InjectedTest;
+import org.junit.Test;
+import org.junit.runner.RunWith;
+import org.mockito.Mock;
+import org.mockito.runners.MockitoJUnitRunner;
 
 import static com.google.inject.name.Names.named;
 import static org.fest.assertions.api.Assertions.assertThat;
 import static org.mockito.Matchers.any;
 import static org.mockito.Mockito.when;
+import static org.sonatype.nexus.repository.config.WritePolicy.ALLOW_ONCE;
 import static org.sonatype.nexus.repository.puppet.internal.group.PuppetMergingHandler.readReleases;
-import static org.sonatype.nexus.repository.storage.WritePolicy.ALLOW_ONCE;
 
 /**
  * @author <a href="mailto:krzysztof.suszynski@wavesoftware.pl">Krzysztof Suszynski</a>
@@ -138,7 +142,7 @@ public class PuppetMergingHandlerTest extends InjectedTest {
   private Repository defineExampleGroupRepository() throws Exception {
     UnitOfWork.begin(lookup(StorageFacet.class).txSupplier());
     try {
-      BlobStoreConfiguration blobStoreCfg = new BlobStoreConfiguration();
+      BlobStoreConfiguration blobStoreCfg = new OrientBlobStoreConfiguration();
       blobStoreCfg.setName("junit");
       blobStoreCfg.setType("File");
       blobStoreCfg.setWritable(true);
@@ -146,7 +150,7 @@ public class PuppetMergingHandlerTest extends InjectedTest {
       BlobStore defaultBlobStore = blobStoreManager.create(blobStoreCfg);
       assertThat(defaultBlobStore).isNotNull();
 
-      Configuration internalCfg = new Configuration();
+      Configuration internalCfg = new OrientConfiguration();
       internalCfg.setRecipeName(PuppetHostedRecipe.NAME);
       internalCfg.setRepositoryName("puppet-internal");
       internalCfg.setOnline(true);
@@ -159,7 +163,7 @@ public class PuppetMergingHandlerTest extends InjectedTest {
       );
       Repository internalRepo = repositoryManager.create(internalCfg);
 
-      Configuration proxyCfg = new Configuration();
+      Configuration proxyCfg = new OrientConfiguration();
       proxyCfg.setOnline(true);
       proxyCfg.setRepositoryName("puppet-proxy");
       proxyCfg.setRecipeName(PuppetProxyRecipe.NAME);
@@ -186,7 +190,7 @@ public class PuppetMergingHandlerTest extends InjectedTest {
 
       assertThat(internalRepo).isNotNull();
       assertThat(proxyRepo).isNotNull();
-      Configuration groupCfg = new Configuration();
+      Configuration groupCfg = new OrientConfiguration();
       groupCfg.setOnline(true);
       groupCfg.setRepositoryName("puppet-group");
       groupCfg.setRecipeName(PuppetGroupRecipe.NAME);

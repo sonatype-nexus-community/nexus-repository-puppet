@@ -13,8 +13,10 @@ import javax.inject.Named;
 public final class ClientInfoProviderStub implements ClientInfoProvider {
     @Override
     public ClientInfo getCurrentThreadClientInfo() {
-        return new ClientInfo(
-          "h3lly3a!", "127.0.0.1", "JUnit/4.12"
-        );
+      return ClientInfo.builder()
+        .userId("h3lly3a!")
+        .remoteIP("127.0.0.1")
+        .userAgent("JUnit/4.12")
+        .build();
     }
 }

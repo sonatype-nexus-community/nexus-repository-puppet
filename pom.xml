@@ -19,7 +19,7 @@
   <parent>
     <groupId>org.sonatype.nexus.plugins</groupId>
     <artifactId>nexus-plugins</artifactId>
-    <version>3.17.0-01</version>
+    <version>3.29.2-02</version>
   </parent>
 
   <artifactId>nexus-repository-puppet</artifactId>
@@ -60,8 +60,8 @@
     </dependency>
 
     <dependency>
-      <groupId>org.sonatype.goodies</groupId>
-      <artifactId>goodies-testsupport</artifactId>
+      <groupId>org.sonatype.nexus</groupId>
+      <artifactId>nexus-testsupport</artifactId>
       <scope>test</scope>
     </dependency>
 
@@ -74,6 +74,17 @@
     <dependency>
       <groupId>org.sonatype.nexus</groupId>
       <artifactId>nexus-rapture</artifactId>
+      <scope>provided</scope>
+    </dependency>
+
+    <dependency>
+      <groupId>org.sonatype.nexus</groupId>
+      <artifactId>nexus-core</artifactId>
+      <scope>provided</scope>
+    </dependency>
+    <dependency>
+      <groupId>org.sonatype.nexus</groupId>
+      <artifactId>nexus-base</artifactId>
       <scope>provided</scope>
     </dependency>
 

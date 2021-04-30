@@ -14,8 +14,8 @@ package org.sonatype.nexus.repository.puppet.internal;
 
 import java.io.IOException;
 import java.io.InputStream;
+import java.util.function.Supplier;
 
-import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import javax.inject.Inject;
 import javax.inject.Named;
@@ -23,10 +23,8 @@ import javax.inject.Singleton;
 
 import org.sonatype.goodies.common.ComponentSupport;
 import org.sonatype.nexus.mime.MimeRulesSource;
-import org.sonatype.nexus.repository.storage.ContentValidator;
-import org.sonatype.nexus.repository.storage.DefaultContentValidator;
-
-import com.google.common.base.Supplier;
+import org.sonatype.nexus.repository.mime.ContentValidator;
+import org.sonatype.nexus.repository.mime.DefaultContentValidator;
 
 import static com.google.common.base.Preconditions.checkNotNull;
 
