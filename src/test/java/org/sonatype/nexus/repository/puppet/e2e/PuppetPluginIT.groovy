@@ -30,7 +30,7 @@ import java.util.concurrent.LinkedBlockingDeque
 class PuppetPluginIT extends Specification {
   private static final Logger LOG = LoggerFactory.getLogger(PuppetPluginIT)
 
-  def 'test if Nexus boots well with Puppet plugin'() {
+  def 'Nexus boots well with Puppet plugin'() {
     given:
     def nexus = installNexus(this.&installPuppetJar as Closure<Path>)
 
