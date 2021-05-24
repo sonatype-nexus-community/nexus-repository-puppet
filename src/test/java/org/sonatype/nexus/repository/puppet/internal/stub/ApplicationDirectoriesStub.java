@@ -2,8 +2,6 @@ package org.sonatype.nexus.repository.puppet.internal.stub;
 
 import org.sonatype.nexus.common.app.ApplicationDirectories;
 
-import javax.inject.Named;
-import javax.inject.Singleton;
 import java.io.File;
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
@@ -14,9 +12,7 @@ import java.nio.file.Path;
  * @author <a href="mailto:krzysztof.suszynski@wavesoftware.pl">Krzysztof Suszynski</a>
  * @since 0.1.0
  */
-@Named
-@Singleton
-public final class ApplicationDirectoriesStub
+final class ApplicationDirectoriesStub
   implements ApplicationDirectories {
 
   private final Path tempDir;

@@ -8,6 +8,7 @@ import org.apache.shiro.mgt.SecurityManager;
 import org.apache.shiro.subject.Subject;
 import org.apache.shiro.util.ThreadContext;
 import org.eclipse.sisu.launch.InjectedTest;
+import org.junit.Rule;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.Mock;
@@ -15,19 +16,22 @@ import org.mockito.runners.MockitoJUnitRunner;
 import org.sonatype.nexus.blobstore.api.BlobStore;
 import org.sonatype.nexus.blobstore.api.BlobStoreConfiguration;
 import org.sonatype.nexus.blobstore.api.BlobStoreManager;
-import org.sonatype.nexus.orient.DatabaseInstance;
 import org.sonatype.nexus.orient.DatabaseInstanceNames;
-import org.sonatype.nexus.orient.testsupport.internal.MemoryDatabaseManager;
+import org.sonatype.nexus.orient.DatabaseManager;
+import org.sonatype.nexus.orient.testsupport.DatabaseInstanceRule;
 import org.sonatype.nexus.repository.Repository;
 import org.sonatype.nexus.repository.config.Configuration;
-import org.sonatype.nexus.repository.config.internal.ConfigurationStore;
+import org.sonatype.nexus.repository.config.ConfigurationStore;
+import org.sonatype.nexus.repository.config.internal.orient.OrientConfiguration;
 import org.sonatype.nexus.repository.group.GroupHandler.DispatchedRepositories;
 import org.sonatype.nexus.repository.internal.blobstore.BlobStoreConfigurationStore;
+import org.sonatype.nexus.repository.internal.blobstore.orient.OrientBlobStoreConfiguration;
 import org.sonatype.nexus.repository.manager.RepositoryManager;
 import org.sonatype.nexus.repository.puppet.internal.hosted.PuppetHostedRecipe;
 import org.sonatype.nexus.repository.puppet.internal.metadata.ModuleReleases;
 import org.sonatype.nexus.repository.puppet.internal.metadata.ModuleReleasesResult;
 import org.sonatype.nexus.repository.puppet.internal.proxy.PuppetProxyRecipe;
+import org.sonatype.nexus.repository.puppet.internal.stub.StubModule;
 import org.sonatype.nexus.repository.storage.StorageFacet;
 import org.sonatype.nexus.repository.storage.internal.ComponentSchemaRegistration;
 import org.sonatype.nexus.repository.view.Context;
@@ -37,18 +41,16 @@ import org.sonatype.nexus.transaction.TransactionModule;
 import org.sonatype.nexus.transaction.UnitOfWork;
 
 import javax.inject.Inject;
-import javax.inject.Provider;
 import javax.validation.Validation;
 import javax.validation.Validator;
 import java.util.HashMap;
 import java.util.Map;
 
-import static com.google.inject.name.Names.named;
 import static org.fest.assertions.api.Assertions.assertThat;
 import static org.mockito.Matchers.any;
 import static org.mockito.Mockito.when;
+import static org.sonatype.nexus.repository.config.WritePolicy.ALLOW_ONCE;
 import static org.sonatype.nexus.repository.puppet.internal.group.PuppetMergingHandler.readReleases;
-import static org.sonatype.nexus.repository.storage.WritePolicy.ALLOW_ONCE;
 
 /**
  * @author <a href="mailto:krzysztof.suszynski@wavesoftware.pl">Krzysztof Suszynski</a>
@@ -62,18 +64,17 @@ public class PuppetMergingHandlerTest extends InjectedTest {
     .put("strictContentTypeValidation", true)
     .put("writePolicy", ALLOW_ONCE)
     .build();
-
+  @Rule
+  public DatabaseInstanceRule databaseInstanceRule = DatabaseInstanceRule
+    .inMemory(DatabaseInstanceNames.CONFIG);
   @Mock
   private ConfigurationStore configurationStore;
   @Mock
   private SecurityManager securityManager;
   @Mock
   private Subject subject;
-
   @Inject
   private RepositoryManager repositoryManager;
-  @Inject
-  private MemoryDatabaseManager databaseManager;
   @Inject
   private BlobStoreManager blobStoreManager;
   @Inject
@@ -83,6 +84,10 @@ public class PuppetMergingHandlerTest extends InjectedTest {
   @Inject
   private BlobStoreConfigurationStore blobStoreConfigurationStore;
 
+  private static ImmutableMap.Builder<String, Object> imap() {
+    return ImmutableMap.builder();
+  }
+
   @Override
   public void configure(Binder binder) {
     binder.bind(Validator.class).toInstance(
@@ -90,11 +95,8 @@ public class PuppetMergingHandlerTest extends InjectedTest {
     );
     binder.bind(ConfigurationStore.class).toInstance(configurationStore);
     binder.install(new TransactionModule());
-    binder.bind(DatabaseInstance.class)
-      .annotatedWith(named(DatabaseInstanceNames.CONFIG))
-      .toProvider((Provider<DatabaseInstance>) () ->
-        databaseManager.instance(DatabaseInstanceNames.CONFIG)
-      );
+    binder.install(new StubModule());
+    binder.bind(DatabaseManager.class).toInstance(databaseInstanceRule.getManager());
   }
 
   @Test
@@ -103,7 +105,6 @@ public class PuppetMergingHandlerTest extends InjectedTest {
     ThreadContext.bind(securityManager);
     when(securityManager.createSubject(any())).thenReturn(subject);
     when(subject.isPermitted(any(Permission.class))).thenReturn(true);
-    databaseManager.start();
     componentSchemaRegistration.start();
     blobStoreConfigurationStore.start();
     blobStoreManager.start();
@@ -133,12 +134,13 @@ public class PuppetMergingHandlerTest extends InjectedTest {
     assertThat(releases.getResults()).isNotEmpty();
     ModuleReleasesResult latestRelease = releases.getResults().iterator().next();
     assertThat(latestRelease.getVersion()).matches("^\\d+\\.\\d+\\.\\d+$");
+    assertThat(latestRelease.getSlug()).contains("coi-jboss");
   }
 
   private Repository defineExampleGroupRepository() throws Exception {
     UnitOfWork.begin(lookup(StorageFacet.class).txSupplier());
     try {
-      BlobStoreConfiguration blobStoreCfg = new BlobStoreConfiguration();
+      BlobStoreConfiguration blobStoreCfg = new OrientBlobStoreConfiguration();
       blobStoreCfg.setName("junit");
       blobStoreCfg.setType("File");
       blobStoreCfg.setWritable(true);
@@ -146,7 +148,7 @@ public class PuppetMergingHandlerTest extends InjectedTest {
       BlobStore defaultBlobStore = blobStoreManager.create(blobStoreCfg);
       assertThat(defaultBlobStore).isNotNull();
 
-      Configuration internalCfg = new Configuration();
+      Configuration internalCfg = new OrientConfiguration();
       internalCfg.setRecipeName(PuppetHostedRecipe.NAME);
       internalCfg.setRepositoryName("puppet-internal");
       internalCfg.setOnline(true);
@@ -159,7 +161,7 @@ public class PuppetMergingHandlerTest extends InjectedTest {
       );
       Repository internalRepo = repositoryManager.create(internalCfg);
 
-      Configuration proxyCfg = new Configuration();
+      Configuration proxyCfg = new OrientConfiguration();
       proxyCfg.setOnline(true);
       proxyCfg.setRepositoryName("puppet-proxy");
       proxyCfg.setRecipeName(PuppetProxyRecipe.NAME);
@@ -186,7 +188,7 @@ public class PuppetMergingHandlerTest extends InjectedTest {
 
       assertThat(internalRepo).isNotNull();
       assertThat(proxyRepo).isNotNull();
-      Configuration groupCfg = new Configuration();
+      Configuration groupCfg = new OrientConfiguration();
       groupCfg.setOnline(true);
       groupCfg.setRepositoryName("puppet-group");
       groupCfg.setRecipeName(PuppetGroupRecipe.NAME);
@@ -212,9 +214,5 @@ public class PuppetMergingHandlerTest extends InjectedTest {
     } catch (Exception e) {
       throw new IllegalStateException(e);
     }
-  }
-
-  private static ImmutableMap.Builder<String, Object> imap() {
-    return ImmutableMap.builder();
   }
 }

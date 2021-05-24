@@ -1,0 +1,10 @@
+{
+  "groupId": "${project.groupId}",
+  "artifactId": "${project.artifactId}",
+  "version": "${project.version}",
+  "parent": {
+    "groupId": "${project.parent.groupId}",
+    "artifactId": "${project.parent.artifactId}",
+    "version": "${nexus.version}"
+  }
+}
