@@ -2,7 +2,6 @@ package org.sonatype.nexus.repository.puppet.internal.stub;
 
 import org.sonatype.nexus.common.node.NodeAccess;
 
-import java.security.cert.Certificate;
 import java.util.Collections;
 import java.util.Map;
 import java.util.Set;
@@ -12,16 +11,6 @@ import java.util.Set;
  * @since 0.1.0
  */
 final class NodeAccessStub implements NodeAccess {
-  @Override
-  public Certificate getCertificate() {
-    throw new UnsupportedOperationException("Not yet implemented");
-  }
-
-  @Override
-  public String getFingerprint() {
-    throw new UnsupportedOperationException("Not yet implemented");
-  }
-
   @Override
   public String getId() {
     return "D3817";

@@ -3,6 +3,7 @@ package org.sonatype.nexus.repository.puppet.internal.group;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 import com.google.inject.Binder;
+import com.google.inject.name.Names;
 import org.apache.shiro.authz.Permission;
 import org.apache.shiro.mgt.SecurityManager;
 import org.apache.shiro.subject.Subject;
@@ -49,6 +50,7 @@ import java.util.Map;
 import static org.fest.assertions.api.Assertions.assertThat;
 import static org.mockito.Matchers.any;
 import static org.mockito.Mockito.when;
+import static org.sonatype.nexus.common.app.FeatureFlags.ORIENT_ENABLED;
 import static org.sonatype.nexus.repository.config.WritePolicy.ALLOW_ONCE;
 import static org.sonatype.nexus.repository.puppet.internal.group.PuppetMergingHandler.readReleases;
 
@@ -90,6 +92,9 @@ public class PuppetMergingHandlerTest extends InjectedTest {
 
   @Override
   public void configure(Binder binder) {
+    binder.bind(Boolean.class)
+      .annotatedWith(Names.named(ORIENT_ENABLED))
+      .toInstance(false);
     binder.bind(Validator.class).toInstance(
       Validation.buildDefaultValidatorFactory().getValidator()
     );
