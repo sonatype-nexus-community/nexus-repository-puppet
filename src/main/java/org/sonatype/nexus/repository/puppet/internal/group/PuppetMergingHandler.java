@@ -20,12 +20,13 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.io.Reader;
+import java.nio.charset.StandardCharsets;
 import java.util.AbstractMap;
 import java.util.LinkedHashMap;
 import java.util.Map;
 import java.util.Map.Entry;
+import java.util.Objects;
 
-import static com.google.common.base.Preconditions.checkNotNull;
 import static org.sonatype.nexus.repository.puppet.internal.PuppetRecipeSupport.moduleReleaseByNameAndVersionMatcher;
 import static org.sonatype.nexus.repository.puppet.internal.PuppetRecipeSupport.moduleReleasesSearchByNameMatcher;
 
@@ -39,6 +40,12 @@ final class PuppetMergingHandler extends GroupHandler {
 
   private static final String NOT_FOUND_JSON;
 
+  private final Map<Matcher, Operation> operations =
+    ImmutableMap.<Matcher, Operation>builder()
+      .put(moduleReleasesSearchByNameMatcher(), this::firstWithResults)
+      .put(moduleReleaseByNameAndVersionMatcher(), this::firstWithResults)
+      .build();
+
   static {
     ModuleReleases releases = new ModuleReleases();
     ModulePagination pagination = new ModulePagination();
@@ -48,22 +55,17 @@ final class PuppetMergingHandler extends GroupHandler {
   }
 
   static ModuleReleases readReleases(Response response) throws IOException {
-    try (InputStream is = checkNotNull(response.getPayload()).openInputStream();
-         Reader reader = new InputStreamReader(is)) {
+    try (InputStream is = Objects.requireNonNull(response.getPayload()).openInputStream();
+         Reader reader = new InputStreamReader(is, StandardCharsets.UTF_8)) {
       Gson gson = new Gson();
       return gson.fromJson(reader, ModuleReleases.class);
     }
   }
 
-  private final Map<Matcher, Operation> operations =
-    ImmutableMap.<Matcher, Operation>builder()
-      .put(moduleReleasesSearchByNameMatcher(), this::firstWithResults)
-      .put(moduleReleaseByNameAndVersionMatcher(), this::firstWithResults)
-      .build();
-
   @Override
   protected Response doGet(
-    @Nonnull Context context, @Nonnull DispatchedRepositories dispatched
+    @Nonnull Context context,
+    @Nonnull DispatchedRepositories dispatched
   ) throws Exception {
     return operations.entrySet()
       .stream()
@@ -94,26 +96,32 @@ final class PuppetMergingHandler extends GroupHandler {
     try {
       return getFirst(context, groupFacet.members(), repositories);
     } catch (Exception ex) {
-      throw new IllegalStateException(ex);
+      throw new IllegalArgumentException(ex);
     }
   }
 
   private Response firstWithResults(
-    Context context, GroupFacet groupFacet, DispatchedRepositories repositories
-  ) throws Exception {
-    LinkedHashMap<Repository, Response> collected =
-      getAll(context, groupFacet.members(), repositories);
-    for (Entry<Repository, Response> entry : collected.entrySet()) {
-      Response response = entry.getValue();
-      if (!response.getStatus().isSuccessful()) {
-        continue;
+    Context context,
+    GroupFacet groupFacet,
+    DispatchedRepositories repositories
+  ) {
+    try {
+      LinkedHashMap<Repository, Response> collected =
+        getAll(context, groupFacet.members(), repositories);
+      for (Entry<Repository, Response> entry : collected.entrySet()) {
+        Response response = entry.getValue();
+        if (!response.getStatus().isSuccessful()) {
+          continue;
+        }
+        ModuleReleases releases = readReleases(response);
+        if (!releases.getResults().isEmpty()) {
+          return response;
+        }
       }
-      ModuleReleases releases = readReleases(response);
-      if (!releases.getResults().isEmpty()) {
-        return response;
-      }
+      return notFoundResponse(context);
+    } catch (Exception ex) {
+      throw new IllegalArgumentException(ex);
     }
-    return notFoundResponse(context);
   }
 
   @Override
@@ -122,14 +130,13 @@ final class PuppetMergingHandler extends GroupHandler {
   }
 
   private interface Operation {
-    default Response perform(Context context, DispatchedRepositories repositories)
-      throws Exception {
+    default Response perform(Context context, DispatchedRepositories repositories) {
       GroupFacet groupFacet = context.getRepository().facet(GroupFacet.class);
       return doPerform(context, groupFacet, repositories);
     }
 
-    Response doPerform(
-      Context context, GroupFacet groupFacet, DispatchedRepositories repositories)
-      throws Exception;
+    Response doPerform(Context context,
+                       GroupFacet groupFacet,
+                       DispatchedRepositories repositories);
   }
 }

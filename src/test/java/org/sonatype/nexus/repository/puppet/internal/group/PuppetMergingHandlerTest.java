@@ -24,7 +24,6 @@ import org.sonatype.nexus.repository.Repository;
 import org.sonatype.nexus.repository.config.Configuration;
 import org.sonatype.nexus.repository.config.ConfigurationStore;
 import org.sonatype.nexus.repository.config.internal.orient.OrientConfiguration;
-import org.sonatype.nexus.repository.group.GroupHandler.DispatchedRepositories;
 import org.sonatype.nexus.repository.internal.blobstore.BlobStoreConfigurationStore;
 import org.sonatype.nexus.repository.internal.blobstore.orient.OrientBlobStoreConfiguration;
 import org.sonatype.nexus.repository.manager.RepositoryManager;
@@ -126,10 +125,9 @@ public class PuppetMergingHandlerTest extends InjectedTest {
     Context ctx = new Context(
       groupRepo, request
     );
-    DispatchedRepositories dispatched = new DispatchedRepositories();
 
     // when
-    Response response = getResponse(mergingHandler, ctx, dispatched);
+    Response response = getResponse(mergingHandler, ctx);
 
     // then
     assertThat(response).isNotNull();
@@ -213,9 +211,9 @@ public class PuppetMergingHandlerTest extends InjectedTest {
     }
   }
 
-  private Response getResponse(PuppetMergingHandler mergingHandler, Context ctx, DispatchedRepositories dispatched) {
+  private Response getResponse(PuppetMergingHandler mergingHandler, Context ctx) {
     try {
-      return mergingHandler.doGet(ctx, dispatched);
+      return mergingHandler.handle(ctx);
     } catch (Exception e) {
       throw new IllegalStateException(e);
     }
