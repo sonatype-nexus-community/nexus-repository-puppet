@@ -3,6 +3,7 @@ package org.sonatype.nexus.repository.puppet.internal.group;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 import com.google.inject.Binder;
+import com.google.inject.name.Names;
 import org.apache.shiro.authz.Permission;
 import org.apache.shiro.mgt.SecurityManager;
 import org.apache.shiro.subject.Subject;
@@ -23,7 +24,6 @@ import org.sonatype.nexus.repository.Repository;
 import org.sonatype.nexus.repository.config.Configuration;
 import org.sonatype.nexus.repository.config.ConfigurationStore;
 import org.sonatype.nexus.repository.config.internal.orient.OrientConfiguration;
-import org.sonatype.nexus.repository.group.GroupHandler.DispatchedRepositories;
 import org.sonatype.nexus.repository.internal.blobstore.BlobStoreConfigurationStore;
 import org.sonatype.nexus.repository.internal.blobstore.orient.OrientBlobStoreConfiguration;
 import org.sonatype.nexus.repository.manager.RepositoryManager;
@@ -49,6 +49,7 @@ import java.util.Map;
 import static org.fest.assertions.api.Assertions.assertThat;
 import static org.mockito.Matchers.any;
 import static org.mockito.Mockito.when;
+import static org.sonatype.nexus.common.app.FeatureFlags.ORIENT_ENABLED;
 import static org.sonatype.nexus.repository.config.WritePolicy.ALLOW_ONCE;
 import static org.sonatype.nexus.repository.puppet.internal.group.PuppetMergingHandler.readReleases;
 
@@ -90,6 +91,9 @@ public class PuppetMergingHandlerTest extends InjectedTest {
 
   @Override
   public void configure(Binder binder) {
+    binder.bind(Boolean.class)
+      .annotatedWith(Names.named(ORIENT_ENABLED))
+      .toInstance(false);
     binder.bind(Validator.class).toInstance(
       Validation.buildDefaultValidatorFactory().getValidator()
     );
@@ -121,10 +125,9 @@ public class PuppetMergingHandlerTest extends InjectedTest {
     Context ctx = new Context(
       groupRepo, request
     );
-    DispatchedRepositories dispatched = new DispatchedRepositories();
 
     // when
-    Response response = getResponse(mergingHandler, ctx, dispatched);
+    Response response = getResponse(mergingHandler, ctx);
 
     // then
     assertThat(response).isNotNull();
@@ -208,9 +211,9 @@ public class PuppetMergingHandlerTest extends InjectedTest {
     }
   }
 
-  private Response getResponse(PuppetMergingHandler mergingHandler, Context ctx, DispatchedRepositories dispatched) {
+  private Response getResponse(PuppetMergingHandler mergingHandler, Context ctx) {
     try {
-      return mergingHandler.doGet(ctx, dispatched);
+      return mergingHandler.handle(ctx);
     } catch (Exception e) {
       throw new IllegalStateException(e);
     }

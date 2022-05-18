@@ -12,22 +12,20 @@
  */
 package org.sonatype.nexus.repository.puppet.internal;
 
-import java.io.InputStream;
-
-import org.sonatype.goodies.testsupport.TestSupport;
-import org.sonatype.nexus.mime.MimeRulesSource;
-import org.sonatype.nexus.repository.storage.DefaultContentValidator;
-
-import com.google.common.base.Supplier;
 import org.junit.Before;
 import org.junit.Test;
 import org.mockito.Mock;
+import org.sonatype.goodies.testsupport.TestSupport;
+import org.sonatype.nexus.common.io.InputStreamSupplier;
+import org.sonatype.nexus.mime.MimeRulesSource;
+import org.sonatype.nexus.repository.storage.DefaultContentValidator;
 
 import static org.hamcrest.CoreMatchers.equalTo;
 import static org.hamcrest.CoreMatchers.is;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.mockito.Mockito.when;
-import static org.sonatype.nexus.repository.view.ContentTypes.*;
+import static org.sonatype.nexus.repository.view.ContentTypes.APPLICATION_GZIP;
+import static org.sonatype.nexus.repository.view.ContentTypes.APPLICATION_JSON;
 
 public class PuppetContentValidatorTest
     extends TestSupport
@@ -42,7 +40,7 @@ public class PuppetContentValidatorTest
   private DefaultContentValidator defaultContentValidator;
 
   @Mock
-  private Supplier<InputStream> contentStream;
+  private InputStreamSupplier contentStream;
 
   @Mock
   private MimeRulesSource mimeRulesSource;

@@ -12,16 +12,13 @@
  */
 package org.sonatype.nexus.repository.puppet.internal.util;
 
-import java.io.InputStream;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.function.Supplier;
-
+import org.junit.Before;
+import org.junit.Test;
+import org.mockito.Mock;
 import org.sonatype.goodies.testsupport.TestSupport;
 import org.sonatype.nexus.blobstore.api.Blob;
 import org.sonatype.nexus.common.collect.NestedAttributesMap;
+import org.sonatype.nexus.common.io.InputStreamSupplier;
 import org.sonatype.nexus.repository.Repository;
 import org.sonatype.nexus.repository.storage.Asset;
 import org.sonatype.nexus.repository.storage.AssetBlob;
@@ -31,9 +28,11 @@ import org.sonatype.nexus.repository.storage.StorageTx;
 import org.sonatype.nexus.repository.view.Content;
 import org.sonatype.nexus.repository.view.Payload;
 
-import org.junit.Before;
-import org.junit.Test;
-import org.mockito.Mock;
+import java.io.InputStream;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 
 import static org.hamcrest.CoreMatchers.is;
 import static org.hamcrest.CoreMatchers.notNullValue;
@@ -69,7 +68,7 @@ public class PuppetDataAccessTest
   private Bucket bucket;
 
   @Mock
-  private Supplier<InputStream> sis;
+  private InputStreamSupplier iss;
 
   @Mock
   private Payload payload;
@@ -120,14 +119,14 @@ public class PuppetDataAccessTest
   @Test
   public void saveAssetReturnsContent() throws Exception {
     InputStream is = getClass().getResourceAsStream(PUPPET_LABS_STDLIB_5_1_0_TAR_GZ);
-    when(sis.get()).thenReturn(is);
+    when(iss.get()).thenReturn(is);
     Map<String, Object> map = new HashMap<>();
     nestedAttributesMap = new NestedAttributesMap(CONTENT, map);
     when(asset.name()).thenReturn(NAME);
-    when(tx.setBlob(asset, NAME, sis, PuppetDataAccess.HASH_ALGORITHMS, null, null, false )).thenReturn(assetBlob);
+    when(tx.setBlob(asset, NAME, iss, PuppetDataAccess.HASH_ALGORITHMS, null, null, false )).thenReturn(assetBlob);
     when(assetBlob.getBlob()).thenReturn(blob);
     when(asset.attributes()).thenReturn(nestedAttributesMap);
-    Content result = underTest.saveAsset(tx, asset, sis, payload);
+    Content result = underTest.saveAsset(tx, asset, iss, payload);
 
     assertThat(result, is(notNullValue()));
   }
