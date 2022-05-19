@@ -23,14 +23,14 @@
   </parent>
 
   <artifactId>nexus-repository-puppet</artifactId>
-  <version>0.1.12</version>
+  <version>0.1.13-SNAPSHOT</version>
   <packaging>bundle</packaging>
 
   <inceptionYear>2018</inceptionYear>
 
   <scm>
     <developerConnection>scm:git:git@github.com:sonatype-nexus-community/nexus-repository-puppet.git</developerConnection>
-    <tag>nexus-repository-puppet-0.1.12</tag>
+    <tag>HEAD</tag>
   </scm>
   <distributionManagement>
     <snapshotRepository>
