@@ -12,10 +12,14 @@ release-args: &release-args
     branches:
       only: master
 
-jobs:
-  build_and_test:
+executors:
+  openjdk8:
     docker:
       - image: 'cimg/openjdk:8.0'
+
+jobs:
+  build_and_test:
+    executor: openjdk8
     steps:
       - checkout
       - maven/with_cache:
@@ -36,6 +40,14 @@ jobs:
           path: ~/project/artifacts/junit
       - store_artifacts:
           path: ~/project/artifacts/it-reports
+
+  fetch_pgp_keys:
+    executor: openjdk8
+    steps:
+      - run:
+          name: load gpg keys
+          command: |
+            gpg --keyserver pgp.mit.edu --recv-keys 
 
 workflows:
   build-branch:
@@ -63,7 +75,10 @@ workflows:
           filters:
             branches:
               only: master
-      - circleci-maven-release-orb/run-maven-release:
+      - fetch_pgp_keys:
           requires:
             - build_and_test
+      - circleci-maven-release-orb/run-maven-release:
+          requires:
+            - fetch_pgp_keys
           <<: *release-args
