@@ -41,14 +41,6 @@ jobs:
       - store_artifacts:
           path: ~/project/artifacts/it-reports
 
-  fetch_pgp_keys:
-    executor: openjdk8
-    steps:
-      - run:
-          name: load gpg keys
-          command: |
-            gpg --keyserver pgp.mit.edu --recv-keys 
-
 workflows:
   build-branch:
     jobs:
@@ -75,10 +67,7 @@ workflows:
           filters:
             branches:
               only: master
-      - fetch_pgp_keys:
-          requires:
-            - build_and_test
       - circleci-maven-release-orb/run-maven-release:
           requires:
-            - fetch_pgp_keys
+            - build_and_test
           <<: *release-args
