@@ -23,7 +23,7 @@
   </parent>
 
   <artifactId>nexus-repository-puppet</artifactId>
-  <version>0.1.12-SNAPSHOT</version>
+  <version>0.1.13-SNAPSHOT</version>
   <packaging>bundle</packaging>
 
   <inceptionYear>2018</inceptionYear>
