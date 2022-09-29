@@ -32,7 +32,7 @@ import org.sonatype.nexus.repository.puppet.internal.metadata.ModuleReleasesResu
 import org.sonatype.nexus.repository.puppet.internal.metadata.PuppetAttributes;
 import org.sonatype.nexus.repository.puppet.internal.util.PuppetAttributeParser;
 import org.sonatype.nexus.repository.puppet.internal.util.PuppetDataAccess;
-import org.sonatype.nexus.repository.search.SearchService;
+import org.sonatype.nexus.repository.search.ElasticSearchService;
 import org.sonatype.nexus.repository.storage.Asset;
 import org.sonatype.nexus.repository.storage.Bucket;
 import org.sonatype.nexus.repository.storage.Component;
@@ -84,7 +84,7 @@ public class PuppetHostedFacetImpl
 
   private final ObjectMapper objectMapper;
 
-  private final SearchService searchService;
+  private final ElasticSearchService searchService;
 
   private final List<SortBuilder> sorting;
 
@@ -100,7 +100,7 @@ public class PuppetHostedFacetImpl
                                final ModuleReleaseResultBuilder builder,
                                final ModuleReleasesBuilder moduleReleasesBuilder,
                                final ObjectMapper objectMapper,
-                               final SearchService searchService) {
+                               final ElasticSearchService searchService) {
 
     this.puppetDataAccess = checkNotNull(dataAccess);
     this.puppetAttributeParser = checkNotNull(puppetAttributeParser);

@@ -24,7 +24,7 @@ import org.sonatype.nexus.repository.Repository;
 import org.sonatype.nexus.repository.config.Configuration;
 import org.sonatype.nexus.repository.config.ConfigurationStore;
 import org.sonatype.nexus.repository.config.internal.orient.OrientConfiguration;
-import org.sonatype.nexus.repository.internal.blobstore.BlobStoreConfigurationStore;
+import org.sonatype.nexus.repository.blobstore.BlobStoreConfigurationStore;
 import org.sonatype.nexus.repository.internal.blobstore.orient.OrientBlobStoreConfiguration;
 import org.sonatype.nexus.repository.manager.RepositoryManager;
 import org.sonatype.nexus.repository.puppet.internal.hosted.PuppetHostedRecipe;
