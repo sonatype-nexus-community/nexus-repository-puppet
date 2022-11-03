@@ -2,6 +2,7 @@ package org.sonatype.nexus.repository.puppet.internal.group;
 
 import org.sonatype.nexus.repository.Facet;
 import org.sonatype.nexus.repository.Type;
+import org.sonatype.nexus.repository.cache.RepositoryCacheInvalidationService;
 import org.sonatype.nexus.repository.group.GroupFacetImpl;
 import org.sonatype.nexus.repository.manager.RepositoryManager;
 import org.sonatype.nexus.repository.types.GroupType;
@@ -24,8 +25,14 @@ public class PuppetGroupFacetImpl
     public PuppetGroupFacetImpl(
             RepositoryManager repositoryManager,
             ConstraintViolationFactory constraintViolationFactory,
-            @Named(GroupType.NAME) Type groupType
+            @Named(GroupType.NAME) Type groupType,
+            final RepositoryCacheInvalidationService repositoryCacheInvalidationService
     ) {
-        super(repositoryManager, constraintViolationFactory, groupType);
+        super(
+          repositoryManager,
+          constraintViolationFactory,
+          groupType,
+          repositoryCacheInvalidationService
+        );
     }
 }

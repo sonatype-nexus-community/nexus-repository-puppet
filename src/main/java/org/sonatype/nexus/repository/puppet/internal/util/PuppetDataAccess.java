@@ -13,14 +13,12 @@
 package org.sonatype.nexus.repository.puppet.internal.util;
 
 import com.google.common.collect.ImmutableList;
-import org.elasticsearch.index.query.QueryBuilder;
-import org.elasticsearch.index.query.QueryBuilders;
-import org.elasticsearch.index.query.SimpleQueryStringBuilder;
 import org.sonatype.nexus.blobstore.api.Blob;
 import org.sonatype.nexus.common.collect.AttributesMap;
 import org.sonatype.nexus.common.hash.HashAlgorithm;
 import org.sonatype.nexus.common.io.InputStreamSupplier;
 import org.sonatype.nexus.repository.Repository;
+import org.sonatype.nexus.repository.search.SearchRequest;
 import org.sonatype.nexus.repository.storage.Asset;
 import org.sonatype.nexus.repository.storage.AssetBlob;
 import org.sonatype.nexus.repository.storage.Bucket;
@@ -38,7 +36,6 @@ import java.io.IOException;
 import java.util.List;
 
 import static java.util.Collections.singletonList;
-import static org.sonatype.nexus.repository.search.DefaultComponentMetadataProducer.REPOSITORY_NAME;
 import static org.sonatype.nexus.repository.storage.ComponentEntityAdapter.P_VERSION;
 import static org.sonatype.nexus.repository.storage.MetadataNodeEntityAdapter.P_NAME;
 
@@ -93,15 +90,12 @@ public class PuppetDataAccess
     return assets;
   }
 
-  public QueryBuilder buildNameQuery(final Repository repository,
-                                     final String module)
+  public SearchRequest.Builder buildNameSearchRequest(final Repository repository,
+                                                      final String module)
   {
-    return QueryBuilders.boolQuery()
-        .must(QueryBuilders.simpleQueryStringQuery(module)
-            .field("name")
-            .field("uri")
-            .defaultOperator(SimpleQueryStringBuilder.Operator.AND))
-        .filter(QueryBuilders.termQuery(REPOSITORY_NAME, repository.getName()));
+    return new SearchRequest.Builder()
+      .repository(repository.getName())
+      .searchFilter("name", module);
   }
 
   /**
