@@ -8,6 +8,7 @@ import org.sonatype.nexus.selector.SelectorSqlBuilder;
 import org.sonatype.nexus.selector.VariableSource;
 
 import javax.annotation.Nullable;
+import java.util.Collection;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
@@ -28,7 +29,7 @@ final class SelectorManagerStub implements SelectorManager {
   }
 
   @Override
-  public List<SelectorConfiguration> browseActive(List<String> repositoryNames, List<String> formats) {
+  public List<SelectorConfiguration> browseActive(Collection<String> repositoryNames, Collection<String> formats) {
     throw new UnsupportedOperationException("Not yet implemented");
   }
 

@@ -17,6 +17,11 @@ final class NodeAccessStub implements NodeAccess {
   }
 
   @Override
+  public String getClusterId() {
+    return getId();
+  }
+
+  @Override
   public boolean isClustered() {
     return false;
   }
@@ -37,12 +42,12 @@ final class NodeAccessStub implements NodeAccess {
   }
 
   @Override
-  public void start() throws Exception {
+  public void start() {
     throw new UnsupportedOperationException("Not yet implemented");
   }
 
   @Override
-  public void stop() throws Exception {
+  public void stop() {
     throw new UnsupportedOperationException("Not yet implemented");
   }
 }

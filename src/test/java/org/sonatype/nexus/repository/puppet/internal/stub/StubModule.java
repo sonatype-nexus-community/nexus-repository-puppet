@@ -2,6 +2,7 @@ package org.sonatype.nexus.repository.puppet.internal.stub;
 
 import com.google.inject.Binder;
 import com.google.inject.Module;
+import org.sonatype.nexus.blobstore.api.metrics.BlobStoreMetricsStore;
 import org.sonatype.nexus.common.app.ApplicationDirectories;
 import org.sonatype.nexus.common.app.ApplicationVersion;
 import org.sonatype.nexus.common.event.EventManager;
@@ -20,5 +21,6 @@ public final class StubModule implements Module {
     binder.bind(NodeAccess.class).to(NodeAccessStub.class);
     binder.bind(SelectorManager.class).to(SelectorManagerStub.class);
     binder.bind(TemplateHelper.class).to(TemplateHelperStub.class);
+    binder.bind(BlobStoreMetricsStore.class).to(BlobStoreMetricsStoreStub.class);
   }
 }

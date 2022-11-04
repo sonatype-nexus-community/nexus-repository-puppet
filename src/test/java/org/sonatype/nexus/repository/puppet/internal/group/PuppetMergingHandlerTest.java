@@ -11,9 +11,9 @@ import org.apache.shiro.util.ThreadContext;
 import org.eclipse.sisu.launch.InjectedTest;
 import org.junit.Rule;
 import org.junit.Test;
-import org.junit.runner.RunWith;
 import org.mockito.Mock;
-import org.mockito.runners.MockitoJUnitRunner;
+import org.mockito.junit.MockitoJUnit;
+import org.mockito.junit.MockitoRule;
 import org.sonatype.nexus.blobstore.api.BlobStore;
 import org.sonatype.nexus.blobstore.api.BlobStoreConfiguration;
 import org.sonatype.nexus.blobstore.api.BlobStoreManager;
@@ -21,10 +21,10 @@ import org.sonatype.nexus.orient.DatabaseInstanceNames;
 import org.sonatype.nexus.orient.DatabaseManager;
 import org.sonatype.nexus.orient.testsupport.DatabaseInstanceRule;
 import org.sonatype.nexus.repository.Repository;
+import org.sonatype.nexus.repository.blobstore.BlobStoreConfigurationStore;
 import org.sonatype.nexus.repository.config.Configuration;
 import org.sonatype.nexus.repository.config.ConfigurationStore;
 import org.sonatype.nexus.repository.config.internal.orient.OrientConfiguration;
-import org.sonatype.nexus.repository.internal.blobstore.BlobStoreConfigurationStore;
 import org.sonatype.nexus.repository.internal.blobstore.orient.OrientBlobStoreConfiguration;
 import org.sonatype.nexus.repository.manager.RepositoryManager;
 import org.sonatype.nexus.repository.puppet.internal.hosted.PuppetHostedRecipe;
@@ -43,11 +43,12 @@ import org.sonatype.nexus.transaction.UnitOfWork;
 import javax.inject.Inject;
 import javax.validation.Validation;
 import javax.validation.Validator;
+import javax.validation.ValidatorFactory;
 import java.util.HashMap;
 import java.util.Map;
 
 import static org.fest.assertions.api.Assertions.assertThat;
-import static org.mockito.Matchers.any;
+import static org.mockito.Mockito.any;
 import static org.mockito.Mockito.when;
 import static org.sonatype.nexus.common.app.FeatureFlags.ORIENT_ENABLED;
 import static org.sonatype.nexus.repository.config.WritePolicy.ALLOW_ONCE;
@@ -57,7 +58,6 @@ import static org.sonatype.nexus.repository.puppet.internal.group.PuppetMergingH
  * @author <a href="mailto:krzysztof.suszynski@wavesoftware.pl">Krzysztof Suszynski</a>
  * @since 0.1.0
  */
-@RunWith(MockitoJUnitRunner.class)
 public class PuppetMergingHandlerTest extends InjectedTest {
 
   private static final Map<String, Object> STORAGE_ATTRIBUTES = imap()
@@ -68,6 +68,8 @@ public class PuppetMergingHandlerTest extends InjectedTest {
   @Rule
   public DatabaseInstanceRule databaseInstanceRule = DatabaseInstanceRule
     .inMemory(DatabaseInstanceNames.CONFIG);
+  @Rule
+  public MockitoRule rule = MockitoJUnit.rule();
   @Mock
   private ConfigurationStore configurationStore;
   @Mock
@@ -94,9 +96,9 @@ public class PuppetMergingHandlerTest extends InjectedTest {
     binder.bind(Boolean.class)
       .annotatedWith(Names.named(ORIENT_ENABLED))
       .toInstance(false);
-    binder.bind(Validator.class).toInstance(
-      Validation.buildDefaultValidatorFactory().getValidator()
-    );
+    try (ValidatorFactory fcry = Validation.buildDefaultValidatorFactory()) {
+      binder.bind(Validator.class).toInstance(fcry.getValidator());
+    }
     binder.bind(ConfigurationStore.class).toInstance(configurationStore);
     binder.install(new TransactionModule());
     binder.install(new StubModule());

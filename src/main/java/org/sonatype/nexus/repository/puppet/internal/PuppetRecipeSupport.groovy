@@ -20,7 +20,7 @@ import org.sonatype.nexus.repository.http.PartialFetchHandler
 import org.sonatype.nexus.repository.httpclient.HttpClientFacet
 import org.sonatype.nexus.repository.puppet.internal.security.PuppetSecurityFacet
 import org.sonatype.nexus.repository.purge.PurgeUnusedFacet
-import org.sonatype.nexus.repository.search.SearchFacet
+import org.sonatype.nexus.repository.search.index.SearchIndexFacet
 import org.sonatype.nexus.repository.security.SecurityHandler
 import org.sonatype.nexus.repository.storage.DefaultComponentMaintenanceImpl
 import org.sonatype.nexus.repository.storage.StorageFacet
@@ -43,7 +43,6 @@ import javax.inject.Provider
 
 import static org.sonatype.nexus.repository.http.HttpMethods.GET
 import static org.sonatype.nexus.repository.http.HttpMethods.HEAD
-
 /**
  * Support for Puppet recipes.
  */
@@ -58,7 +57,7 @@ abstract class PuppetRecipeSupport extends RecipeSupport {
   Provider<StorageFacet> storageFacet
 
   @Inject
-  Provider<SearchFacet> searchFacet
+  Provider<SearchIndexFacet> searchFacet
 
   @Inject
   Provider<AttributesFacet> attributesFacet
@@ -102,6 +101,7 @@ abstract class PuppetRecipeSupport extends RecipeSupport {
     return browseUnsupportedHandler
   }
 
+  @SuppressWarnings('unused')
   @Inject
   void setBrowseUnsupportedHandler(BrowseUnsupportedHandler browseUnsupportedHandler) {
     this.browseUnsupportedHandler = browseUnsupportedHandler
