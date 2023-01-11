@@ -65,7 +65,7 @@ public class PuppetPathUtilsTest
     setupTokens();
     String result = underTest.buildModuleReleaseByNameAndVersionPath(mockState);
 
-    assertThat(result, is(equalTo("/v3/releases/puppetlabs-stdlib-5.1.0")));
+    assertThat(result, is(equalTo("v3/releases/puppetlabs-stdlib-5.1.0")));
   }
 
   @Test
@@ -78,7 +78,7 @@ public class PuppetPathUtilsTest
 
     String result = underTest.buildModuleReleaseByNamePath(parameters);
 
-    assertThat(result, is(equalTo("/v3/releases?module=puppetlabs-stdlib&sort_by=version")));
+    assertThat(result, is(equalTo("v3/releases?module=puppetlabs-stdlib&sort_by=version")));
   }
 
   @Test
@@ -88,7 +88,7 @@ public class PuppetPathUtilsTest
 
     String result = underTest.buildModuleReleaseByNamePath(parameters);
 
-    assertThat(result, is(equalTo("/v3/releases")));
+    assertThat(result, is(equalTo("v3/releases")));
   }
 
   @Test
@@ -97,7 +97,7 @@ public class PuppetPathUtilsTest
 
     String result = underTest.buildModuleByNamePath(mockState);
 
-    assertThat(result, is(equalTo("/v3/modules/puppetlabs-stdlib")));
+    assertThat(result, is(equalTo("v3/modules/puppetlabs-stdlib")));
   }
 
   @Test
@@ -106,7 +106,7 @@ public class PuppetPathUtilsTest
 
     String result = underTest.buildModuleDownloadPath(mockState);
 
-    assertThat(result, is(equalTo("/v3/files/puppetlabs-stdlib-5.1.0.tar.gz")));
+    assertThat(result, is(equalTo("v3/files/puppetlabs-stdlib-5.1.0.tar.gz")));
   }
 
   private void setupTokens() {

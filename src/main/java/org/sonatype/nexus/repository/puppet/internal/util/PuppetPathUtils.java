@@ -55,21 +55,21 @@ public class PuppetPathUtils
   }
 
   public String buildModuleReleaseByNameAndVersionPath(final State matcherState) {
-    return String.format("/v3/releases/%s-%s-%s", user(matcherState), module(matcherState), version(matcherState));
+    return String.format("v3/releases/%s-%s-%s", user(matcherState), module(matcherState), version(matcherState));
   }
 
   public String buildModuleByNamePath(final State matcherState) {
-    return String.format("/v3/modules/%s-%s", user(matcherState), module(matcherState));
+    return String.format("v3/modules/%s-%s", user(matcherState), module(matcherState));
   }
 
   public String buildModuleReleaseByNamePath(final Parameters parameters) {
     if (parameters.isEmpty()) {
-      return "/v3/releases";
+      return "v3/releases";
     }
-    return String.format("/v3/releases?%s", Joiner.on("&").withKeyValueSeparator("=").join(parameters));
+    return String.format("v3/releases?%s", Joiner.on("&").withKeyValueSeparator("=").join(parameters));
   }
 
   public String buildModuleDownloadPath(final State matcherState) {
-    return String.format("/v3/files/%s-%s-%s.tar.gz", user(matcherState), module(matcherState), version(matcherState));
+    return String.format("v3/files/%s-%s-%s.tar.gz", user(matcherState), module(matcherState), version(matcherState));
   }
 }
